@@ -12,7 +12,7 @@ export default class Menu extends window.Phaser.State {
 
     imageBtn.anchor.set(0.5);
 
-    this.game.add.text(250, 16, 'CLICK EINSTEIN TO PLAY', { fill: '#fff' });
+    this.game.add.text(220, 16, 'CLICK EINSTEIN TO PLAY', { fill: '#fff' });
   }
 
   startGame() {
