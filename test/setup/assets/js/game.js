@@ -8,6 +8,9 @@ var Game = {
     },
 
     create: function(){
+        //setup physics for wall collision
+        game.physics.startSystem(Phaser.Physics.ARCADE);
+
         werewolf = [];
         meatArr = [];
         squareSize = 46;
@@ -28,6 +31,15 @@ var Game = {
         werewolf.animations.add('right', [2], 10, true);
         werewolf.animations.add('down', [1], 10, true);
         werewolf.animations.add('up', [3], 10, true);
+
+        //check if werewolf is colliding with the world bounds
+        game.physics.enable(werewolf, Phaser.Physics.ARCADE);
+        werewolf.body.collideWorldBounds = true;
+        werewolf.checkWorldBounds = true;
+        werewolf.events.onOutOfBounds.add(function(){
+            console.log('out of bounds');
+        });
+        
 
         for(var i=0; i<10; i++){
             this.generateMeat();
