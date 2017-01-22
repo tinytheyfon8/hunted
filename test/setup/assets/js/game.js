@@ -1,10 +1,11 @@
 var werewolf, squareSize, score, speed, updateDelay, direction, new_direction, addNew, cursors, scoreTextValue, 
-textStyle_Key, textStyle_Value, meatArr;
+textStyle_Key, textStyle_Value, meatArr, silverArr;
 
 var Game = {
     preload: function(){
         game.load.spritesheet('werewolf', './assets/images/werewolf.png', 46, 46); //46 by 46 is the perfect size
         game.load.spritesheet('meat', './assets/images/food.png', 16, 17); //load meat sprite
+        game.load.spritesheet('silver', './assets/images/silver.png', 37, 35); //load silver sprite
     },
 
     create: function(){
@@ -13,6 +14,7 @@ var Game = {
 
         werewolf = [];
         meatArr = [];
+        silverArr = [];
         squareSize = 46;
         score = 0;
         speed = 0;
@@ -40,6 +42,10 @@ var Game = {
             console.log('out of bounds');
         });
         
+
+        for(var i=0; i<10; i++){
+            this.generateSilver();
+        }
 
         for(var i=0; i<10; i++){
             this.generateMeat();
@@ -113,12 +119,21 @@ var Game = {
                 thisObj.meatCollision(meatPiece);
             }); //for each meatPiece, check to see if the werewolf's location is the same as the meatPiece
 
-            this.wallCollision(werewolf);
+            //this.wallCollision(werewolf);
             //place the last cell in front of the stack
             // werewolf.push(lastCell);
             // firstCell = lastCell;
         }
 
+    },
+
+    generateSilver: function(){
+        var randomX = Math.floor(Math.random() * 14) * squareSize,
+            randomY = Math.floor(Math.random() * 12) * squareSize;
+        
+        var silver = game.add.sprite(randomX, randomY, 'silver');
+        silver.frame = 7;
+        silverArr.push(silver);
     },
 
     generateMeat: function(){
@@ -139,9 +154,9 @@ var Game = {
         }
     },
 
-    wallCollision: function(character){
-        if(character.x >= 720 || character.x <= 0 || character.y >= 600 || character.y <= 0){
-            console.log('hit a wall');
-        }
-    }
+    // wallCollision: function(character){
+    //     if(character.x >= 720 || character.x <= 0 || character.y >= 600 || character.y <= 0){
+    //         console.log('hit a wall');
+    //     }
+    // }
 }
