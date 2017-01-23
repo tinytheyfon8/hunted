@@ -1,5 +1,7 @@
 // Play game state
 
+import io from 'socket.io-client';
+
 import land from '../assets/images/earth.png';
 import meat from '../assets/images/food.png';
 import silver from '../assets/images/silver.png';
@@ -23,6 +25,7 @@ export default class Play extends window.Phaser.State {
     this.scoreTextValue = null;
     this.textStyleKey = {};
     this.textStyleValue = {};
+    this.socket = null;
   }
 
   preload() {
@@ -33,6 +36,8 @@ export default class Play extends window.Phaser.State {
   }
 
   create() {
+    this.socket = io.connect();
+
     this.game.world.setBounds(0, 0, 720, 600);
 
     this.land = this.game.add.tileSprite(0, 0, 720, 600, 'land');
@@ -67,6 +72,8 @@ export default class Play extends window.Phaser.State {
     // Score.
     this.game.add.text(30, 20, 'SCORE', this.textStyleKey);
     this.scoreTextValue = this.game.add.text(90, 18, this.score.toString(), this.textStyleValue);
+
+    this.setEventHandlers();
   }
 
   update() {
@@ -164,5 +171,15 @@ export default class Play extends window.Phaser.State {
       this.score++;
       this.scoreTextValue.text = this.score.toString();
     }
+  }
+
+  setEventHandlers() {
+    this.socket.on('connect', this.onSocketConnected.bind(this));
+  }
+
+  onSocketConnected() {
+    console.log('Connected to socket server');
+
+    this.socket.emit('event', { connected: true });
   }
 }
