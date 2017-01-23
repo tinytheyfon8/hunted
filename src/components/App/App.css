@@ -1,0 +1,9 @@
+.App {
+  text-align: center;
+}
+
+#phaserContainer {
+  width: 720px;
+  margin: auto;
+  margin-top: 50px;
+}
