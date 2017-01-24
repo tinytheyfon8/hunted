@@ -198,7 +198,7 @@ export default class Play extends window.Phaser.State {
     this.socket.on('connect', this.onSocketConnected.bind(this));
     this.socket.on('eat', this.onMeatEat.bind(this));
     this.socket.on('move', this.onPlayerMovement.bind(this));
-    this.socket.on('new player', data => console.log(data.id));
+    this.socket.on('new player', data => console.log("New Player Joined!", data));
   }
 
 

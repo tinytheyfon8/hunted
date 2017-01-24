@@ -7,6 +7,7 @@ const app = express();
 const server = require('http').createServer(app);
 const io = require('socket.io')(server);
 
+const players = require('./Players')
 const routes = require('./routes');
 
 
@@ -32,9 +33,10 @@ if (process.env.NODE_ENV === 'production') {
 }
 
 io.on('connection', client => {
-  client.on('new player', function(data) {
-    this.emit('new player', { id: client.id });
-  });
+  var newPlayer = players.addPlayerAndAssignRole();
+  this.emit('new player', newPlayer);
+  // client.on('new player', function(data) {
+  // });
   client.on('disconnect', () => {
     console.log('disconnected');
   });
@@ -46,6 +48,9 @@ io.on('connection', client => {
     console.log("player moved", data);
     this.broadcast.emit('move', data);
   });
+  client.on('switch', function(){
+    players.reverseIsHunted();
+  })
 });
 
 module.exports = server;
