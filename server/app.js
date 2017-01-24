@@ -32,8 +32,8 @@ if (process.env.NODE_ENV === 'production') {
 }
 
 io.on('connection', client => {
-  client.on('event', data => {
-    console.log(data);
+  client.on('new player', data => {
+    client.emit('new player', { id: client.id, client });
   });
   client.on('disconnect', () => {
     console.log('disconnected');

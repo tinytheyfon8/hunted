@@ -87,7 +87,15 @@ export default class Play extends window.Phaser.State {
       this.speed = 0;
     }
 
-    if (this.cursors.right.isDown) {
+    if (this.cursors.right.isDown && this.cursors.up.isDown) {
+      this.newDirection = 'up-right';
+    } else if (this.cursors.right.isDown && this.cursors.down.isDown) {
+      this.newDirection = 'down-right';
+    } else if (this.cursors.left.isDown && this.cursors.up.isDown) {
+      this.newDirection = 'up-left';
+    } else if (this.cursors.left.isDown && this.cursors.down.isDown) {
+      this.newDirection = 'down-left';
+    } else if (this.cursors.right.isDown) {
       this.newDirection = 'right';
     } else if (this.cursors.left.isDown) {
       this.newDirection = 'left';
@@ -105,20 +113,32 @@ export default class Play extends window.Phaser.State {
         this.newDirection = null;
       }
 
-      if (this.direction === 'right') {
+      if (this.direction === 'up-right') {
+        this.player.x = this.player.x + 10.6;
+        this.player.y = this.player.y - 10.6;
+        this.player.animations.play('right');
+      } else if (this.direction === 'down-right') {
+        this.player.x = this.player.x + 10.6;
+        this.player.y = this.player.y + 10.6;
+        this.player.animations.play('right');
+      } else if (this.direction === 'up-left') {
+        this.player.x = this.player.x - 10.6;
+        this.player.y = this.player.y - 10.6;
+        this.player.animations.play('left');
+      } else if (this.direction === 'down-left') {
+        this.player.x = this.player.x - 10.6;
+        this.player.y = this.player.y + 10.6;
+        this.player.animations.play('left');
+      } else if (this.direction === 'right') {
         this.player.x = this.player.x + 15;
-        this.player.y = this.player.y;
         this.player.animations.play('right');
       } else if (this.direction === 'left') {
         this.player.x = this.player.x - 15;
-        this.player.y = this.player.y;
         this.player.animations.play('left');
       } else if (this.direction === 'up') {
-        this.player.x = this.player.x;
         this.player.y = this.player.y - 15;
         this.player.animations.play('up');
       } else if (this.direction === 'down') {
-        this.player.x = this.player.x;
         this.player.y = this.player.y + 15;
         this.player.animations.play('down');
       }
@@ -182,6 +202,7 @@ export default class Play extends window.Phaser.State {
     this.socket.on('connect', this.onSocketConnected.bind(this));
     this.socket.on('eat', this.onMeatEat.bind(this));
     this.socket.on('move', this.onPlayerMovement.bind(this));
+    this.socket.on('new player', data => console.log(data.id, JSON.stringify(data.client)));
   }
 
 
@@ -189,7 +210,7 @@ export default class Play extends window.Phaser.State {
   onSocketConnected() {
     console.log('Connected to socket server');
 
-    this.socket.emit('event', { connected: true });
+    this.socket.emit('new player');
   }
 
   onMeatEat(data){
