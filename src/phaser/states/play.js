@@ -5,13 +5,14 @@ import io from 'socket.io-client';
 import land from '../assets/images/earth.png';
 import meat from '../assets/images/food.png';
 import silver from '../assets/images/silver.png';
-import werewolf from '../assets/images/werewolf.png';
+import player from '../assets/images/werewolf.png';
 
 export default class Play extends window.Phaser.State {
   constructor() {
     super();
 
-    this.werewolf = null;
+    this.player = null;
+    this.remotePlayer = null;
     this.land = null;
     this.meatObj = {};
     this.silverObj = {};
@@ -30,7 +31,7 @@ export default class Play extends window.Phaser.State {
 
   preload() {
     this.game.load.image('land', land);
-    this.game.load.spritesheet('werewolf', werewolf, 46, 46); //46 by 46 is the perfect size
+    this.game.load.spritesheet('player', player, 46, 46); //46 by 46 is the perfect size
     this.game.load.spritesheet('meat', meat, 16, 17); //load meat sprite
     this.game.load.spritesheet('silver', silver, 37, 35); //load silver sprite
   }
@@ -45,16 +46,16 @@ export default class Play extends window.Phaser.State {
 
     this.cursors = this.game.input.keyboard.createCursorKeys();
 
-    this.werewolf = this.game.add.sprite(150, 150, 'werewolf');
-    this.werewolf.animations.add('left', [0], 10, true);
-    this.werewolf.animations.add('right', [2], 10, true);
-    this.werewolf.animations.add('down', [1], 10, true);
-    this.werewolf.animations.add('up', [3], 10, true);
+    this.player = this.game.add.sprite(150, 150, 'player');
+    this.player.animations.add('left', [0], 10, true);
+    this.player.animations.add('right', [2], 10, true);
+    this.player.animations.add('down', [1], 10, true);
+    this.player.animations.add('up', [3], 10, true);
 
-    this.game.physics.enable(this.werewolf, window.Phaser.Physics.ARCADE);
-    this.werewolf.body.collideWorldBounds = true;
-    this.werewolf.checkWorldBounds = true;
-    this.werewolf.events.onOutOfBounds.add(function(){
+    this.game.physics.enable(this.player, window.Phaser.Physics.ARCADE);
+    this.player.body.collideWorldBounds = true;
+    this.player.checkWorldBounds = true;
+    this.player.events.onOutOfBounds.add(function(){
       console.log('out of bounds');
     });
 
@@ -105,24 +106,27 @@ export default class Play extends window.Phaser.State {
       }
 
       if (this.direction === 'right') {
-        this.werewolf.x = this.werewolf.x + 15;
-        this.werewolf.y = this.werewolf.y;
-        this.werewolf.animations.play('right');
+        this.player.x = this.player.x + 15;
+        this.player.y = this.player.y;
+        this.player.animations.play('right');
       } else if (this.direction === 'left') {
-        this.werewolf.x = this.werewolf.x - 15;
-        this.werewolf.y = this.werewolf.y;
-        this.werewolf.animations.play('left');
+        this.player.x = this.player.x - 15;
+        this.player.y = this.player.y;
+        this.player.animations.play('left');
       } else if (this.direction === 'up') {
-        this.werewolf.x = this.werewolf.x;
-        this.werewolf.y = this.werewolf.y - 15;
-        this.werewolf.animations.play('up');
+        this.player.x = this.player.x;
+        this.player.y = this.player.y - 15;
+        this.player.animations.play('up');
       } else if (this.direction === 'down') {
-        this.werewolf.x = this.werewolf.x;
-        this.werewolf.y = this.werewolf.y + 15;
-        this.werewolf.animations.play('down');
+        this.player.x = this.player.x;
+        this.player.y = this.player.y + 15;
+        this.player.animations.play('down');
       }
 
-      // for each meatPiece, check to see if the werewolf's
+      this.socket.emit('move', { x: this.player.x, y: this.player.y, direction: this.direction } );
+
+
+      // for each meatPiece, check to see if the player's
       // location is the same as the meatPiece
       // had to change to object since destroy will not
       // remove from array
@@ -158,28 +162,46 @@ export default class Play extends window.Phaser.State {
 
   meatCollision(food, i) {
     if (
-      this.werewolf.x >= food.x - 25 &&
-      this.werewolf.x <= food.x + 25 &&
-      this.werewolf.y >= food.y - 25 &&
-      this.werewolf.y <= food.y + 25
+      this.player.x >= food.x - 25 &&
+      this.player.x <= food.x + 25 &&
+      this.player.y >= food.y - 25 &&
+      this.player.y <= food.y + 25
     ) {
       // because the x, y coordinates of the meat and
-      // werewolf never line up perfectly, give a range
+      // player never line up perfectly, give a range
       // of overlapping variables
       delete this.meatObj[i];
       food.destroy();
       this.score++;
       this.scoreTextValue.text = this.score.toString();
+      this.socket.emit('eat', { score: this.score });
     }
   }
 
   setEventHandlers() {
     this.socket.on('connect', this.onSocketConnected.bind(this));
+    this.socket.on('eat', this.onMeatEat.bind(this));
+    this.socket.on('move', this.onPlayerMovement.bind(this));
   }
+
+
 
   onSocketConnected() {
     console.log('Connected to socket server');
 
     this.socket.emit('event', { connected: true });
+  }
+
+  onMeatEat(data){
+    console.log('other player ate meat', data);
+  }
+
+  onPlayerMovement(data){
+    console.log('other player moved:', data);
+
+    this.player.x = data.x;
+    this.player.y = data.y;
+    this.player.direction = data.direction;
+    this.player.animations.play(this.player.direction);
   }
 }
