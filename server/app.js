@@ -38,6 +38,14 @@ io.on('connection', client => {
   client.on('disconnect', () => {
     console.log('disconnected');
   });
+  client.on('eat', data => {
+    console.log("somthing was eaten", data);
+    io.emit('eat', data);
+  });
+  client.on('move', data => {
+    console.log("player moved", data);
+    io.emit('move', data);
+  })
 });
 
 module.exports = server;
