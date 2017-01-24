@@ -5,7 +5,9 @@ class Players {
     this.players = [];
   }
 
-  detectPlayersCollision(player1, player2) {
+  detectPlayersCollision() {
+    var player1 = this.players[0];
+    var player2 = this.players[1];
     if (
       player1.x >= player2.x - 25 &&
       player1.x <= player2.x + 25 &&

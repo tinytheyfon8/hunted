@@ -52,7 +52,6 @@ io.on('connection', client => {
     this.broadcast.emit('eat', data);
   });
   client.on('move', function(data) {
-    // console.log("player moved", data);
     this.broadcast.emit('move', data);
   });
   client.on('switch', function(){
