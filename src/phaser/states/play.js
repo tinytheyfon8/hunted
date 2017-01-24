@@ -2,6 +2,8 @@
 
 import io from 'socket.io-client';
 
+import EnemyPlayer from '../EnemyPlayer';
+
 import land from '../assets/images/earth.png';
 import meat from '../assets/images/food.png';
 import silver from '../assets/images/silver.png';
@@ -12,7 +14,7 @@ export default class Play extends window.Phaser.State {
     super();
 
     this.player = null;
-    this.remotePlayer = null;
+    this.enemy = null;
     this.land = null;
     this.meatObj = {};
     this.silverObj = {};
@@ -42,7 +44,6 @@ export default class Play extends window.Phaser.State {
     this.game.world.setBounds(0, 0, 720, 600);
 
     this.land = this.game.add.tileSprite(0, 0, 720, 600, 'land');
-    // land.fixedToCamera = true;
 
     this.cursors = this.game.input.keyboard.createCursorKeys();
 
@@ -196,12 +197,11 @@ export default class Play extends window.Phaser.State {
 
   setEventHandlers() {
     this.socket.on('connect', this.onSocketConnected.bind(this));
+    this.socket.on('new enemy', this.onNewEnemy.bind(this));
     this.socket.on('eat', this.onMeatEat.bind(this));
     this.socket.on('move', this.onPlayerMovement.bind(this));
     this.socket.on('new player', data => console.log("New Player Joined!", data));
   }
-
-
 
   onSocketConnected() {
     console.log('Connected to socket server');
@@ -209,16 +209,22 @@ export default class Play extends window.Phaser.State {
     this.socket.emit('new player');
   }
 
+  onNewEnemy() {
+    this.enemy = new EnemyPlayer(this.game, 300, 300, 'left', 'werewolf', 'enemy');
+  }
+
   onMeatEat(data) {
     console.log('other player ate meat', data);
   }
 
-  onPlayerMovement(data) {
+  onEnemyPlayerMovement(data) {
     console.log('other player moved:', data);
 
-    this.player.x = data.x;
-    this.player.y = data.y;
-    this.player.direction = data.direction;
-    this.player.animations.play(this.player.direction);
+    this.enemy.update(data.x, data.y, data.direction);
+
+    // this.player.x = data.x;
+    // this.player.y = data.y;
+    // this.player.direction = data.direction;
+    // this.player.animations.play(this.player.direction);
   }
 }
