@@ -209,8 +209,16 @@ export default class Play extends window.Phaser.State {
       food.destroy();
       this.score++;
       this.scoreTextValue.text = this.score.toString();
+      if(this.score === 9){
+        this.switchRoles();
+      }
       this.socket.emit('eat', { score: this.score });
     }
+  }
+
+  switchRoles(){
+    console.log('switching started');
+    this.socket.emit('switch');
   }
 
   setEventHandlers() {
@@ -243,8 +251,10 @@ export default class Play extends window.Phaser.State {
   }
 
   onPlayerMovement(data) {
-    // console.log('other player moved:', data);
-
     this.enemy.update(data.x, data.y, data.direction);
+  }
+
+  onRoleSwitch() {
+    alert('The hunter has become the hunted!');
   }
 }
