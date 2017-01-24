@@ -32,20 +32,20 @@ if (process.env.NODE_ENV === 'production') {
 }
 
 io.on('connection', client => {
-  client.on('event', data => {
-    console.log(data);
+  client.on('new player', function(data) {
+    this.emit('new player', { id: client.id });
   });
   client.on('disconnect', () => {
     console.log('disconnected');
   });
-  client.on('eat', data => {
+  client.on('eat', function(data) {
     console.log("somthing was eaten", data);
-    io.emit('eat', data);
+    this.broadcast.emit('eat', data);
   });
-  client.on('move', data => {
+  client.on('move', function(data) {
     console.log("player moved", data);
-    io.emit('move', data);
-  })
+    this.broadcast.emit('move', data);
+  });
 });
 
 module.exports = server;
