@@ -49,9 +49,14 @@ export default class Play extends window.Phaser.State {
 
     this.player = this.game.add.sprite(150, 150, 'werewolf');
     this.player.animations.add('left', [0, 9, 18, 27], 10, true);
-    this.player.animations.add('right', [2, 11, 20, 29], 10, true);
     this.player.animations.add('down', [1, 10, 19, 28], 10, true);
+    this.player.animations.add('right', [2, 11, 20, 29], 10, true);
     this.player.animations.add('up', [3, 12, 21, 30], 10, true);
+    this.player.animations.add('stop-left', [0], 10, true);
+    this.player.animations.add('stop-down', [1], 10, true);
+    this.player.animations.add('stop-right', [2], 10, true);
+    this.player.animations.add('stop-up', [3], 10, true);
+
 
     this.game.physics.enable(this.player, window.Phaser.Physics.ARCADE);
     this.player.body.collideWorldBounds = true;
@@ -154,6 +159,16 @@ export default class Play extends window.Phaser.State {
       Object.keys(this.meatObj).forEach(i => {
         this.meatCollision(this.meatObj[i], i);
       });
+    } else if (this.speed === 0) {
+      if (this.direction === 'right' || this.direction === 'up-right' || this.direction === 'down-right') {
+        this.player.animations.play('stop-right');
+      } else if (this.direction === 'left' || this.direction === 'up-left' || this.direction === 'down-left') {
+        this.player.animations.play('stop-left');
+      } else if (this.direction === 'up') {
+        this.player.animations.play('stop-up');
+      } else if (this.direction === 'down') {
+        this.player.animations.play('stop-down');
+      }
     }
   }
 
@@ -221,10 +236,5 @@ export default class Play extends window.Phaser.State {
     console.log('other player moved:', data);
 
     this.enemy.update(data.x, data.y, data.direction);
-
-    // this.player.x = data.x;
-    // this.player.y = data.y;
-    // this.player.direction = data.direction;
-    // this.player.animations.play(this.player.direction);
   }
 }
