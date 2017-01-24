@@ -37,7 +37,7 @@ if (process.env.NODE_ENV === 'production') {
 io.on('connection', client => {
   client.on('new player', function(data) {
     var newPlayer = playerInstance.addPlayerAndAssignRole();
-    this.emit('new player', newPlayer );
+    this.broadcast.emit('new player', newPlayer );
   });
   client.on('disconnect', () => {
     console.log('disconnected');
