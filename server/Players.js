@@ -1,10 +1,9 @@
+var Player = require('./Player.js');
 
-module.exports = class Players {
+class Players {
   constructor() {
     this.players = [];
   }
-
-
 
   detectPlayersCollision(player1, player2) {
     if (
@@ -22,12 +21,12 @@ module.exports = class Players {
   addPlayerAndAssignRole() {
     var randomNumber = Math.floor(Math.random() * 1000); //replace with id provided by sockets
     var player;
-    if(this.players.length === 0) {
-      player = new Player(100, 100, 'right', 'Werewolf', false, randomNumber)
+    if(this.players.length && this.players.length % 2 === 0) {
+      player = new Player(500, 500, 'left', 'Human', true, randomNumber)
       this.players.push(player);
       return player;
-    } else if (this.player.length === 1) {
-      player = new Player(500, 500, 'left', 'Human', true, randomNumber)
+    } else {
+      player = new Player(100, 100, 'right', 'Werewolf', false, randomNumber)
       this.players.push(player);
       return player;
     }
@@ -36,12 +35,9 @@ module.exports = class Players {
   reverseIsHunted() {
     this.players.forEach(player => player.isHunted = !player.isHunted)
   }
-
-
-
 }
 
-
+module.exports = Players;
 
 
 

@@ -10,6 +10,8 @@ const io = require('socket.io')(server);
 const players = require('./Players')
 const routes = require('./routes');
 
+const playerInstance = new players();
+console.log(playerInstance.addPlayerAndAssignRole);
 
 // mongoose.connect('mongodb://localhost/hacker-news');
 
@@ -33,10 +35,10 @@ if (process.env.NODE_ENV === 'production') {
 }
 
 io.on('connection', client => {
-  var newPlayer = players.addPlayerAndAssignRole();
-  this.emit('new player', newPlayer);
-  // client.on('new player', function(data) {
-  // });
+  client.on('new player', function(data) {
+    var newPlayer = playerInstance.addPlayerAndAssignRole();
+    this.emit('new player', newPlayer );
+  });
   client.on('disconnect', () => {
     console.log('disconnected');
   });
@@ -49,7 +51,7 @@ io.on('connection', client => {
     this.broadcast.emit('move', data);
   });
   client.on('switch', function(){
-    players.reverseIsHunted();
+    //players.reverseIsHunted();
   })
 });
 

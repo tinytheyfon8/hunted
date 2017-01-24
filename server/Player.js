@@ -1,5 +1,4 @@
-
-module.exports = class Player {
+class Player {
   constructor(x, y, dir, type, isHunted, id) {
     this.x = x;
     this.y = y;
@@ -9,3 +8,5 @@ module.exports = class Player {
     this.id = id;
   }
 }
+
+module.exports = Player;
