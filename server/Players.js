@@ -6,13 +6,24 @@ class Players {
   }
 
   detectPlayersCollision() {
-    var player1 = this.players[0];
-    var player2 = this.players[1];
+    let prey;
+    let hunter;
+
+    this.players.forEach((val) => {
+      if (val.isHunted){
+        prey = val;
+      } else {
+        hunter = val;
+      }
+    })
+
     if (
-      player1.x >= player2.x - 25 &&
-      player1.x <= player2.x + 25 &&
-      player1.y >= player2.y - 25 &&
-      player1.y <= player2.y + 25
+      prey &&
+      hunter &&
+      hunter.x >= prey.x - 25 &&
+      hunter.x <= prey.x + 25 &&
+      hunter.y >= prey.y - 25 &&
+      hunter.y <= prey.y + 25
     ) {
       return true;
     } else {
@@ -34,7 +45,7 @@ class Players {
 
   addPlayerAndAssignRole(id) {
     var player;
-    if(this.players.length && this.players.length % 2 === 0) {
+    if(this.players.length && this.players.length === 1) {
       player = new Player(500, 500, 'left', 'human', true, id)
       this.players.push(player);
       return player;
