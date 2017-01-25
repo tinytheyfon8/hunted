@@ -13,14 +13,32 @@ export default class Player {
     this.previousPosition = { x, y, direction };
 
     this.player = this.game.add.sprite(x, y, this.type);
-    this.player.animations.add('left', [0, 9, 18, 27], 10, true);
-    this.player.animations.add('down', [1, 10, 19, 28], 10, true);
-    this.player.animations.add('right', [2, 11, 20, 29], 10, true);
-    this.player.animations.add('up', [3, 12, 21, 30], 10, true);
-    this.player.animations.add('stop-left', [0], 10, true);
-    this.player.animations.add('stop-down', [1], 10, true);
-    this.player.animations.add('stop-right', [2], 10, true);
-    this.player.animations.add('stop-up', [3], 10, true);
+
+    if(this.type === 'human'){
+      this.player.scale.setTo(2,2);
+    }
+
+    if(this.type === "werewolf"){
+      this.player.animations.add('left', [0, 9, 18, 27], 10, true);
+      this.player.animations.add('down', [1, 10, 19, 28], 10, true);
+      this.player.animations.add('right', [2, 11, 20, 29], 10, true);
+      this.player.animations.add('up', [3, 12, 21, 30], 10, true);
+      this.player.animations.add('stop-left', [0], 10, true);
+      this.player.animations.add('stop-down', [1], 10, true);
+      this.player.animations.add('stop-right', [2], 10, true);
+      this.player.animations.add('stop-up', [3], 10, true);
+    } else if(this.type === "human" && this.isHunted === true){
+      this.player.animations.add('left', [2], 10, true);
+      this.player.animations.add('down', [1, 15], 10, true);
+      this.player.animations.add('right', [4], 10, true);
+      this.player.animations.add('up', [3, 17], 10, true);
+      this.player.animations.add('stop-left', [2], 10, true);
+      this.player.animations.add('stop-down', [1], 10, true);
+      this.player.animations.add('stop-right', [4], 10, true);
+      this.player.animations.add('stop-up', [3], 10, true);
+    } else if (this.type === "human" && this.isHunted === false) {
+
+    }
 
     this.game.physics.enable(this.player, window.Phaser.Physics.ARCADE);
     this.player.body.collideWorldBounds = true;

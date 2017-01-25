@@ -9,6 +9,7 @@ import land from '../assets/images/earth.png';
 import meat from '../assets/images/food.png';
 import silver from '../assets/images/silver.png';
 import werewolf from '../assets/images/werewolf.png';
+import human from '../assets/images/human.png';
 
 export default class Play extends window.Phaser.State {
   constructor() {
@@ -37,6 +38,7 @@ export default class Play extends window.Phaser.State {
     this.game.load.spritesheet('werewolf', werewolf, 46, 46); //46 by 46 is the perfect size
     this.game.load.spritesheet('meat', meat, 16, 17); //load meat sprite
     this.game.load.spritesheet('silver', silver, 37, 35); //load silver sprite
+    this.game.load.spritesheet('human', human, 29, 31);
   }
 
   create() {
@@ -186,7 +188,7 @@ export default class Play extends window.Phaser.State {
   onNewPlayerAdded(data) {
 
     // HARD CODE TO WEREWOLF UNTIL HUMAN SPRITE IS ADDED
-    data.type = 'werewolf';
+    //data.type = 'human';
 
     this.me = new LocalPlayer(
       this.game, data.x, data.y, data.dir,
@@ -198,7 +200,7 @@ export default class Play extends window.Phaser.State {
     console.log(data);
 
     // HARD CODE TO WEREWOLF UNTIL HUMAN SPRITE IS ADDED
-    data.type = 'werewolf';
+   // data.type = 'werewolf';
 
     this.enemy = new EnemyPlayer(
       this.game, data.x, data.y, data.dir,
