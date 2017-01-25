@@ -40,9 +40,9 @@ io.on('connection', client => {
       playerInstance.clearPlayers();
     } else if (playerInstance.players.length === 1) {
       this.emit('new enemy', playerInstance.players[0]);
-    } 
+    }
     var newPlayer = playerInstance.addPlayerAndAssignRole(this.id);
-    this.broadcast.emit('new enemy', newPlayer); 
+    this.broadcast.emit('new enemy', newPlayer);
     this.emit('player id', newPlayer.id); //send id to this.player on client
   });
   client.on('disconnect', () => {
@@ -55,9 +55,16 @@ io.on('connection', client => {
   client.on('move', function(data) {
     var moves = data;
     var updatedObj = playerInstance.updatePlayers(moves);
+    var killed = playerInstance.detectPlayersCollision();
     this.broadcast.emit('move', updatedObj);
     console.log('updated players array', playerInstance.players);
+    console.log("KILLED VAR: ", killed);
+    if (killed) {
+      this.broadcast.emit('Player killed');
+    }
   });
+  // client.on('collision', function(){
+  // });
   client.on('switchRoles', function(){
     //players.reverseIsHunted();
   })
