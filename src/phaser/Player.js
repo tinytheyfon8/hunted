@@ -1,12 +1,13 @@
 // General player class
 
 export default class Player {
-  constructor(game, x, y, direction, type, isHunted, name) {
+  constructor(game, x, y, direction, type, isHunted, name, id) {
     this.game = game;
     this.direction = direction;
     this.type = type;
     this.isHunted = isHunted;
     this.name = name;
+    this.id = id;
     this.alive = true;
 
     this.previousPosition = { x, y, direction };
