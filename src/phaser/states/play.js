@@ -101,6 +101,7 @@ export default class Play extends window.Phaser.State {
         if (this.speed > 0) {
           if (this.newDirection) {
             this.direction = this.newDirection;
+            this.me.direction = this.direction;
             this.newDirection = null;
           }
 
@@ -117,7 +118,7 @@ export default class Play extends window.Phaser.State {
           this.me.showStopAnimations(this.direction);
         }
 
-        this.socket.emit('move', { x: this.player.x, y: this.player.y, direction: this.direction, id: this.player.id } );
+        this.socket.emit('move', { x: this.me.player.x, y: this.me.player.y, direction: this.me.direction, id: this.me.id } );
       }
     }
   }
@@ -186,7 +187,7 @@ export default class Play extends window.Phaser.State {
   onNewPlayerAdded(data) {
     this.me = new LocalPlayer(
       this.game, data.x, data.y, data.dir,
-      data.type, data.isHunted, 'me'
+      data.type, data.isHunted, 'me', data.id
     );
   }
 
@@ -201,11 +202,6 @@ export default class Play extends window.Phaser.State {
       data.type, data.isHunted, 'enemy', data.id
     );
     console.log('enemy added', this.enemy);
-  }
-
-  onPlayerId(data) {
-    console.log('id', data);
-    this.player.id = data;
   }
 
   onMeatEat(data) {
