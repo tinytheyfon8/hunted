@@ -36,8 +36,13 @@ if (process.env.NODE_ENV === 'production') {
 
 io.on('connection', client => {
   client.on('new player', function(data) {
-    var newPlayer = playerInstance.addPlayerAndAssignRole();
-    this.broadcast.emit('new player', newPlayer );
+    if (playerInstance.players.length >= 2) {
+      playerInstance.clearPlayers();
+    } else if (playerInstance.players.length === 1) {
+      this.emit('new enemy', playerInstance.players[0]);
+    }
+    var newPlayer = playerInstance.addPlayerAndAssignRole(this.id);
+    this.broadcast.emit('new enemy', newPlayer);
   });
   client.on('disconnect', () => {
     console.log('disconnected');
@@ -47,7 +52,7 @@ io.on('connection', client => {
     this.broadcast.emit('eat', data);
   });
   client.on('move', function(data) {
-    console.log("player moved", data);
+    // console.log("player moved", data);
     this.broadcast.emit('move', data);
   });
   client.on('switch', function(){

@@ -2,6 +2,8 @@
 
 import io from 'socket.io-client';
 
+import EnemyPlayer from '../EnemyPlayer';
+
 import land from '../assets/images/earth.png';
 import meat from '../assets/images/food.png';
 import silver from '../assets/images/silver.png';
@@ -12,7 +14,7 @@ export default class Play extends window.Phaser.State {
     super();
 
     this.player = null;
-    this.remotePlayer = null;
+    this.enemy = null;
     this.land = null;
     this.meatObj = {};
     this.silverObj = {};
@@ -42,15 +44,19 @@ export default class Play extends window.Phaser.State {
     this.game.world.setBounds(0, 0, 720, 600);
 
     this.land = this.game.add.tileSprite(0, 0, 720, 600, 'land');
-    // land.fixedToCamera = true;
 
     this.cursors = this.game.input.keyboard.createCursorKeys();
 
     this.player = this.game.add.sprite(150, 150, 'werewolf');
     this.player.animations.add('left', [0, 9, 18, 27], 10, true);
-    this.player.animations.add('right', [2, 11, 20, 29], 10, true);
     this.player.animations.add('down', [1, 10, 19, 28], 10, true);
+    this.player.animations.add('right', [2, 11, 20, 29], 10, true);
     this.player.animations.add('up', [3, 12, 21, 30], 10, true);
+    this.player.animations.add('stop-left', [0], 10, true);
+    this.player.animations.add('stop-down', [1], 10, true);
+    this.player.animations.add('stop-right', [2], 10, true);
+    this.player.animations.add('stop-up', [3], 10, true);
+
 
     this.game.physics.enable(this.player, window.Phaser.Physics.ARCADE);
     this.player.body.collideWorldBounds = true;
@@ -107,52 +113,65 @@ export default class Play extends window.Phaser.State {
 
     this.updateDelay++;
 
-    if (this.speed > 0 && this.updateDelay % (8 - this.speed) === 0) {
-      if (this.newDirection) {
-        this.direction = this.newDirection;
-        this.newDirection = null;
-      }
+    if (this.updateDelay % (8 - this.speed) === 0) {
+      if (this.speed > 0) {
+        if (this.newDirection) {
+          this.direction = this.newDirection;
+          this.newDirection = null;
+        }
 
-      if (this.direction === 'up-right') {
-        this.player.x = this.player.x + 10.6;
-        this.player.y = this.player.y - 10.6;
-        this.player.animations.play('right');
-      } else if (this.direction === 'down-right') {
-        this.player.x = this.player.x + 10.6;
-        this.player.y = this.player.y + 10.6;
-        this.player.animations.play('right');
-      } else if (this.direction === 'up-left') {
-        this.player.x = this.player.x - 10.6;
-        this.player.y = this.player.y - 10.6;
-        this.player.animations.play('left');
-      } else if (this.direction === 'down-left') {
-        this.player.x = this.player.x - 10.6;
-        this.player.y = this.player.y + 10.6;
-        this.player.animations.play('left');
-      } else if (this.direction === 'right') {
-        this.player.x = this.player.x + 15;
-        this.player.animations.play('right');
-      } else if (this.direction === 'left') {
-        this.player.x = this.player.x - 15;
-        this.player.animations.play('left');
-      } else if (this.direction === 'up') {
-        this.player.y = this.player.y - 15;
-        this.player.animations.play('up');
-      } else if (this.direction === 'down') {
-        this.player.y = this.player.y + 15;
-        this.player.animations.play('down');
+        if (this.direction === 'up-right') {
+          this.player.x = this.player.x + 11;
+          this.player.y = this.player.y - 11;
+          this.player.animations.play('right');
+        } else if (this.direction === 'down-right') {
+          this.player.x = this.player.x + 11;
+          this.player.y = this.player.y + 11;
+          this.player.animations.play('right');
+        } else if (this.direction === 'up-left') {
+          this.player.x = this.player.x - 11;
+          this.player.y = this.player.y - 11;
+          this.player.animations.play('left');
+        } else if (this.direction === 'down-left') {
+          this.player.x = this.player.x - 11;
+          this.player.y = this.player.y + 11;
+          this.player.animations.play('left');
+        } else if (this.direction === 'right') {
+          this.player.x = this.player.x + 15;
+          this.player.animations.play('right');
+        } else if (this.direction === 'left') {
+          this.player.x = this.player.x - 15;
+          this.player.animations.play('left');
+        } else if (this.direction === 'up') {
+          this.player.y = this.player.y - 15;
+          this.player.animations.play('up');
+        } else if (this.direction === 'down') {
+          this.player.y = this.player.y + 15;
+          this.player.animations.play('down');
+        }
+
+        // for each meatPiece, check to see if the player's
+        // location is the same as the meatPiece
+        // had to change to object since destroy will not
+        // remove from array
+        Object.keys(this.meatObj).forEach(i => {
+          this.meatCollision(this.meatObj[i], i);
+        });
+      } else {
+        this.direction = this.newDirection ? this.newDirection : this.direction;
+
+        if (this.direction === 'right' || this.direction === 'up-right' || this.direction === 'down-right') {
+          this.player.animations.play('stop-right');
+        } else if (this.direction === 'left' || this.direction === 'up-left' || this.direction === 'down-left') {
+          this.player.animations.play('stop-left');
+        } else if (this.direction === 'up') {
+          this.player.animations.play('stop-up');
+        } else if (this.direction === 'down') {
+          this.player.animations.play('stop-down');
+        }
       }
 
       this.socket.emit('move', { x: this.player.x, y: this.player.y, direction: this.direction } );
-
-
-      // for each meatPiece, check to see if the player's
-      // location is the same as the meatPiece
-      // had to change to object since destroy will not
-      // remove from array
-      Object.keys(this.meatObj).forEach(i => {
-        this.meatCollision(this.meatObj[i], i);
-      });
     }
   }
 
@@ -196,12 +215,10 @@ export default class Play extends window.Phaser.State {
 
   setEventHandlers() {
     this.socket.on('connect', this.onSocketConnected.bind(this));
+    this.socket.on('new enemy', this.onNewEnemyPlayer.bind(this));
     this.socket.on('eat', this.onMeatEat.bind(this));
     this.socket.on('move', this.onPlayerMovement.bind(this));
-    this.socket.on('new player', data => console.log("New Player Joined!", data));
   }
-
-
 
   onSocketConnected() {
     console.log('Connected to socket server');
@@ -209,16 +226,25 @@ export default class Play extends window.Phaser.State {
     this.socket.emit('new player');
   }
 
+  onNewEnemyPlayer(data) {
+    console.log(data);
+
+    // HARD CODE TO WEREWOLF UNTIL HUMAN SPRITE IS ADDED
+    data.type = 'werewolf';
+
+    this.enemy = new EnemyPlayer(
+      this.game, data.x, data.y, data.dir,
+      data.type, data.isHunted, 'enemy'
+    );
+  }
+
   onMeatEat(data) {
     console.log('other player ate meat', data);
   }
 
   onPlayerMovement(data) {
-    console.log('other player moved:', data);
+    // console.log('other player moved:', data);
 
-    this.player.x = data.x;
-    this.player.y = data.y;
-    this.player.direction = data.direction;
-    this.player.animations.play(this.player.direction);
+    this.enemy.update(data.x, data.y, data.direction);
   }
 }
