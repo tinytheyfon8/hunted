@@ -18,15 +18,14 @@ class Players {
     }
   }
 
-  addPlayerAndAssignRole() {
-    var randomNumber = Math.floor(Math.random() * 1000); //replace with id provided by sockets
+  addPlayerAndAssignRole(id) {
     var player;
     if(this.players.length && this.players.length % 2 === 0) {
-      player = new Player(500, 500, 'left', 'Human', true, randomNumber)
+      player = new Player(500, 500, 'left', 'human', true, id)
       this.players.push(player);
       return player;
     } else {
-      player = new Player(100, 100, 'right', 'Werewolf', false, randomNumber)
+      player = new Player(100, 100, 'right', 'werewolf', false, id)
       this.players.push(player);
       return player;
     }
@@ -34,6 +33,10 @@ class Players {
 
   reverseIsHunted() {
     this.players.forEach(player => player.isHunted = !player.isHunted)
+  }
+
+  clearPlayers() {
+    this.players = [];
   }
 }
 

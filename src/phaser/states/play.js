@@ -113,62 +113,65 @@ export default class Play extends window.Phaser.State {
 
     this.updateDelay++;
 
-    if (this.speed > 0 && this.updateDelay % (8 - this.speed) === 0) {
-      if (this.newDirection) {
-        this.direction = this.newDirection;
-        this.newDirection = null;
-      }
+    if (this.updateDelay % (8 - this.speed) === 0) {
+      if (this.speed > 0) {
+        if (this.newDirection) {
+          this.direction = this.newDirection;
+          this.newDirection = null;
+        }
 
-      if (this.direction === 'up-right') {
-        this.player.x = this.player.x + 10.6;
-        this.player.y = this.player.y - 10.6;
-        this.player.animations.play('right');
-      } else if (this.direction === 'down-right') {
-        this.player.x = this.player.x + 10.6;
-        this.player.y = this.player.y + 10.6;
-        this.player.animations.play('right');
-      } else if (this.direction === 'up-left') {
-        this.player.x = this.player.x - 10.6;
-        this.player.y = this.player.y - 10.6;
-        this.player.animations.play('left');
-      } else if (this.direction === 'down-left') {
-        this.player.x = this.player.x - 10.6;
-        this.player.y = this.player.y + 10.6;
-        this.player.animations.play('left');
-      } else if (this.direction === 'right') {
-        this.player.x = this.player.x + 15;
-        this.player.animations.play('right');
-      } else if (this.direction === 'left') {
-        this.player.x = this.player.x - 15;
-        this.player.animations.play('left');
-      } else if (this.direction === 'up') {
-        this.player.y = this.player.y - 15;
-        this.player.animations.play('up');
-      } else if (this.direction === 'down') {
-        this.player.y = this.player.y + 15;
-        this.player.animations.play('down');
+        if (this.direction === 'up-right') {
+          this.player.x = this.player.x + 11;
+          this.player.y = this.player.y - 11;
+          this.player.animations.play('right');
+        } else if (this.direction === 'down-right') {
+          this.player.x = this.player.x + 11;
+          this.player.y = this.player.y + 11;
+          this.player.animations.play('right');
+        } else if (this.direction === 'up-left') {
+          this.player.x = this.player.x - 11;
+          this.player.y = this.player.y - 11;
+          this.player.animations.play('left');
+        } else if (this.direction === 'down-left') {
+          this.player.x = this.player.x - 11;
+          this.player.y = this.player.y + 11;
+          this.player.animations.play('left');
+        } else if (this.direction === 'right') {
+          this.player.x = this.player.x + 15;
+          this.player.animations.play('right');
+        } else if (this.direction === 'left') {
+          this.player.x = this.player.x - 15;
+          this.player.animations.play('left');
+        } else if (this.direction === 'up') {
+          this.player.y = this.player.y - 15;
+          this.player.animations.play('up');
+        } else if (this.direction === 'down') {
+          this.player.y = this.player.y + 15;
+          this.player.animations.play('down');
+        }
+
+        // for each meatPiece, check to see if the player's
+        // location is the same as the meatPiece
+        // had to change to object since destroy will not
+        // remove from array
+        Object.keys(this.meatObj).forEach(i => {
+          this.meatCollision(this.meatObj[i], i);
+        });
+      } else {
+        this.direction = this.newDirection ? this.newDirection : this.direction;
+
+        if (this.direction === 'right' || this.direction === 'up-right' || this.direction === 'down-right') {
+          this.player.animations.play('stop-right');
+        } else if (this.direction === 'left' || this.direction === 'up-left' || this.direction === 'down-left') {
+          this.player.animations.play('stop-left');
+        } else if (this.direction === 'up') {
+          this.player.animations.play('stop-up');
+        } else if (this.direction === 'down') {
+          this.player.animations.play('stop-down');
+        }
       }
 
       this.socket.emit('move', { x: this.player.x, y: this.player.y, direction: this.direction } );
-
-
-      // for each meatPiece, check to see if the player's
-      // location is the same as the meatPiece
-      // had to change to object since destroy will not
-      // remove from array
-      Object.keys(this.meatObj).forEach(i => {
-        this.meatCollision(this.meatObj[i], i);
-      });
-    } else if (this.speed === 0) {
-      if (this.direction === 'right' || this.direction === 'up-right' || this.direction === 'down-right') {
-        this.player.animations.play('stop-right');
-      } else if (this.direction === 'left' || this.direction === 'up-left' || this.direction === 'down-left') {
-        this.player.animations.play('stop-left');
-      } else if (this.direction === 'up') {
-        this.player.animations.play('stop-up');
-      } else if (this.direction === 'down') {
-        this.player.animations.play('stop-down');
-      }
     }
   }
 
@@ -212,10 +215,9 @@ export default class Play extends window.Phaser.State {
 
   setEventHandlers() {
     this.socket.on('connect', this.onSocketConnected.bind(this));
-    this.socket.on('new enemy', this.onNewEnemy.bind(this));
+    this.socket.on('new enemy', this.onNewEnemyPlayer.bind(this));
     this.socket.on('eat', this.onMeatEat.bind(this));
     this.socket.on('move', this.onPlayerMovement.bind(this));
-    this.socket.on('new player', data => console.log("New Player Joined!", data));
   }
 
   onSocketConnected() {
@@ -224,16 +226,24 @@ export default class Play extends window.Phaser.State {
     this.socket.emit('new player');
   }
 
-  onNewEnemy() {
-    this.enemy = new EnemyPlayer(this.game, 300, 300, 'left', 'werewolf', 'enemy');
+  onNewEnemyPlayer(data) {
+    console.log(data);
+
+    // HARD CODE TO WEREWOLF UNTIL HUMAN SPRITE IS ADDED
+    data.type = 'werewolf';
+
+    this.enemy = new EnemyPlayer(
+      this.game, data.x, data.y, data.dir,
+      data.type, data.isHunted, 'enemy'
+    );
   }
 
   onMeatEat(data) {
     console.log('other player ate meat', data);
   }
 
-  onEnemyPlayerMovement(data) {
-    console.log('other player moved:', data);
+  onPlayerMovement(data) {
+    // console.log('other player moved:', data);
 
     this.enemy.update(data.x, data.y, data.direction);
   }
