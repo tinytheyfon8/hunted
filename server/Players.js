@@ -20,6 +20,18 @@ class Players {
     }
   }
 
+  updatePlayers(updatedPlayer) {
+    for(var i = 0; i < this.players.length; i++){
+      if(this.players[i].id === updatedPlayer.id){
+        this.players[i].x = updatedPlayer.x;
+        this.players[i].y = updatedPlayer.y;
+        this.players[i].direction = updatedPlayer.direction;
+        return this.players[i];
+      }
+    }
+  }
+
+
   addPlayerAndAssignRole(id) {
     var player;
     if(this.players.length && this.players.length % 2 === 0) {

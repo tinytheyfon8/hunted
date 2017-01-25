@@ -1,13 +1,14 @@
 
 
 export default class EnemyPlayer {
-  constructor(game, x, y, direction, type, isHunted, name) {
+  constructor(game, x, y, direction, type, isHunted, name, id) {
     this.game = game;
     this.direction = direction;
     this.type = type;
     this.isHunted = isHunted;
     this.name = name;
     this.alive = true;
+    this.id = id;
 
     this.previousPosition = { x, y, direction };
 

@@ -171,7 +171,7 @@ export default class Play extends window.Phaser.State {
         }
       }
 
-      this.socket.emit('move', { x: this.player.x, y: this.player.y, direction: this.direction } );
+      this.socket.emit('move', { x: this.player.x, y: this.player.y, direction: this.direction, id: this.player.id } );
     }
   }
 
@@ -226,6 +226,7 @@ export default class Play extends window.Phaser.State {
     this.socket.on('new enemy', this.onNewEnemyPlayer.bind(this));
     this.socket.on('eat', this.onMeatEat.bind(this));
     this.socket.on('move', this.onPlayerMovement.bind(this));
+    this.socket.on('player id', this.onPlayerId.bind(this));
   }
 
   onSocketConnected() {
@@ -242,8 +243,14 @@ export default class Play extends window.Phaser.State {
 
     this.enemy = new EnemyPlayer(
       this.game, data.x, data.y, data.dir,
-      data.type, data.isHunted, 'enemy'
+      data.type, data.isHunted, 'enemy', data.id
     );
+    console.log('enemy added', this.enemy);
+  }
+
+  onPlayerId(data) {
+    console.log('id', data);
+    this.player.id = data;
   }
 
   onMeatEat(data) {
@@ -251,6 +258,7 @@ export default class Play extends window.Phaser.State {
   }
 
   onPlayerMovement(data) {
+    console.log('this enemy', this.enemy);
     this.enemy.update(data.x, data.y, data.direction);
   }
 
