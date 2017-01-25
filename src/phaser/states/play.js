@@ -55,7 +55,7 @@ export default class Play extends window.Phaser.State {
     for (let i = 0; i < 10; i++) {
       this.generateSilver(i);
     }
-
+    console.log('silverObj', this.silverObj);
     for (let i = 0; i < 10; i++) {
       this.generateMeat(i);
     }
@@ -116,6 +116,11 @@ export default class Play extends window.Phaser.State {
           Object.keys(this.meatObj).forEach(i => {
             this.meatCollision(this.meatObj[i], i);
           });
+
+          Object.keys(this.silverObj).forEach(j => {
+            console.log('is checking silver collision', j);
+            this.silverCollision(this.silverObj[j], j);
+          });
         } else {
           this.me.showStopAnimations(this.direction);
         }
@@ -132,7 +137,7 @@ export default class Play extends window.Phaser.State {
     const silver = this.game.add.sprite(randomX, randomY, 'silver');
     silver.frame = 7;
 
-    this.meatObj[i] = silver;
+    this.silverObj[i] = silver;
   }
 
   generateMeat(i) {
@@ -159,10 +164,32 @@ export default class Play extends window.Phaser.State {
       food.destroy();
       this.score++;
       this.scoreTextValue.text = this.score.toString();
-      if(this.score === 9){
+      if(this.score % 9 === 0){
         this.switchRoles();
       }
       this.socket.emit('eat', { score: this.score });
+    }
+  }
+
+  silverCollision(silver, i) {
+    console.log('silver', silver);
+    if (
+      this.me.player.x >= silver.x - 25 &&
+      this.me.player.x <= silver.x + 25 &&
+      this.me.player.y >= silver.y - 25 &&
+      this.me.player.y <= silver.y + 25
+    ) {
+      // because the x, y coordinates of the meat and
+      // player never line up perfectly, give a range
+      // of overlapping variables
+      delete this.silverObj[i];
+      silver.destroy();
+      this.score++;
+      this.scoreTextValue.text = this.score.toString();
+      if(this.score % 9 === 0){
+        this.switchRoles();
+      }
+      this.socket.emit('forge', { score: this.score });
     }
   }
 
@@ -176,6 +203,7 @@ export default class Play extends window.Phaser.State {
     this.socket.on('new player added', this.onNewPlayerAdded.bind(this));
     this.socket.on('new enemy', this.onNewEnemyPlayer.bind(this));
     this.socket.on('eat', this.onMeatEat.bind(this));
+    this.socket.on('forge', this.onCollectSilver.bind(this));
     this.socket.on('move', this.onPlayerMovement.bind(this));
   }
 
@@ -211,6 +239,10 @@ export default class Play extends window.Phaser.State {
 
   onMeatEat(data) {
     console.log('other player ate meat', data);
+  }
+
+  onCollectSilver(data) {
+    console.log('other player collected silver for weapon', data);
   }
 
   onPlayerMovement(data) {

@@ -37,7 +37,14 @@ export default class Player {
       this.player.animations.add('stop-right', [4], 10, true);
       this.player.animations.add('stop-up', [3], 10, true);
     } else if (this.type === "human" && this.isHunted === false) {
-
+      this.player.animations.add('left', [6], 20, true);
+      this.player.animations.add('down', [5], 10, true);
+      this.player.animations.add('right', [8], 10, true);
+      this.player.animations.add('up', [7], 10, true);
+      this.player.animations.add('stop-left', [6], 10, true);
+      this.player.animations.add('stop-down', [5], 10, true);
+      this.player.animations.add('stop-right', [8], 10, true);
+      this.player.animations.add('stop-up', [7], 10, true);
     }
 
     this.game.physics.enable(this.player, window.Phaser.Physics.ARCADE);

@@ -51,6 +51,10 @@ io.on('connection', client => {
     console.log("somthing was eaten", data);
     this.broadcast.emit('eat', data);
   });
+  client.on('forge', function(data) {
+    console.log("somthing was forged", data);
+    this.broadcast.emit('forge', data);
+  });
   client.on('move', function(data) {
     var moves = data;
     var updatedObj = playerInstance.updatePlayers(moves);
