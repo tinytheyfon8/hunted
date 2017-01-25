@@ -175,7 +175,6 @@ export default class Play extends window.Phaser.State {
     this.socket.on('new enemy', this.onNewEnemyPlayer.bind(this));
     this.socket.on('eat', this.onMeatEat.bind(this));
     this.socket.on('move', this.onPlayerMovement.bind(this));
-    this.socket.on('player id', this.onPlayerId.bind(this));
   }
 
   onSocketConnected() {
