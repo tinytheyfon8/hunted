@@ -3,6 +3,7 @@
 import io from 'socket.io-client';
 
 import EnemyPlayer from '../EnemyPlayer';
+import LocalPlayer from '../LocalPlayer';
 
 import land from '../assets/images/earth.png';
 import meat from '../assets/images/food.png';
@@ -13,7 +14,7 @@ export default class Play extends window.Phaser.State {
   constructor() {
     super();
 
-    this.player = null;
+    this.me = null;
     this.enemy = null;
     this.land = null;
     this.meatObj = {};
@@ -39,31 +40,15 @@ export default class Play extends window.Phaser.State {
   }
 
   create() {
-    this.socket = io.connect();
-
     this.game.world.setBounds(0, 0, 720, 600);
 
     this.land = this.game.add.tileSprite(0, 0, 720, 600, 'land');
 
     this.cursors = this.game.input.keyboard.createCursorKeys();
 
-    this.player = this.game.add.sprite(150, 150, 'werewolf');
-    this.player.animations.add('left', [0, 9, 18, 27], 10, true);
-    this.player.animations.add('down', [1, 10, 19, 28], 10, true);
-    this.player.animations.add('right', [2, 11, 20, 29], 10, true);
-    this.player.animations.add('up', [3, 12, 21, 30], 10, true);
-    this.player.animations.add('stop-left', [0], 10, true);
-    this.player.animations.add('stop-down', [1], 10, true);
-    this.player.animations.add('stop-right', [2], 10, true);
-    this.player.animations.add('stop-up', [3], 10, true);
+    this.socket = io.connect();
 
-
-    this.game.physics.enable(this.player, window.Phaser.Physics.ARCADE);
-    this.player.body.collideWorldBounds = true;
-    this.player.checkWorldBounds = true;
-    this.player.events.onOutOfBounds.add(function() {
-      console.log('out of bounds');
-    });
+    this.setEventHandlers();
 
     for (let i = 0; i < 10; i++) {
       this.generateSilver(i);
@@ -79,99 +64,61 @@ export default class Play extends window.Phaser.State {
     // Score.
     this.game.add.text(30, 20, 'SCORE', this.textStyleKey);
     this.scoreTextValue = this.game.add.text(90, 18, this.score.toString(), this.textStyleValue);
-
-    this.setEventHandlers();
   }
 
   update() {
-    if (
-      this.cursors.right.isDown || this.cursors.left.isDown ||
-      this.cursors.up.isDown || this.cursors.down.isDown
-    ) {
-      this.speed = 2;
-    } else {
-      this.speed = 0;
-    }
-
-    if (this.cursors.right.isDown && this.cursors.up.isDown) {
-      this.newDirection = 'up-right';
-    } else if (this.cursors.right.isDown && this.cursors.down.isDown) {
-      this.newDirection = 'down-right';
-    } else if (this.cursors.left.isDown && this.cursors.up.isDown) {
-      this.newDirection = 'up-left';
-    } else if (this.cursors.left.isDown && this.cursors.down.isDown) {
-      this.newDirection = 'down-left';
-    } else if (this.cursors.right.isDown) {
-      this.newDirection = 'right';
-    } else if (this.cursors.left.isDown) {
-      this.newDirection = 'left';
-    } else if (this.cursors.up.isDown) {
-      this.newDirection = 'up';
-    } else if (this.cursors.down.isDown) {
-      this.newDirection = 'down';
-    }
-
-    this.updateDelay++;
-
-    if (this.updateDelay % (8 - this.speed) === 0) {
-      if (this.speed > 0) {
-        if (this.newDirection) {
-          this.direction = this.newDirection;
-          this.newDirection = null;
-        }
-
-        if (this.direction === 'up-right') {
-          this.player.x = this.player.x + 11;
-          this.player.y = this.player.y - 11;
-          this.player.animations.play('right');
-        } else if (this.direction === 'down-right') {
-          this.player.x = this.player.x + 11;
-          this.player.y = this.player.y + 11;
-          this.player.animations.play('right');
-        } else if (this.direction === 'up-left') {
-          this.player.x = this.player.x - 11;
-          this.player.y = this.player.y - 11;
-          this.player.animations.play('left');
-        } else if (this.direction === 'down-left') {
-          this.player.x = this.player.x - 11;
-          this.player.y = this.player.y + 11;
-          this.player.animations.play('left');
-        } else if (this.direction === 'right') {
-          this.player.x = this.player.x + 15;
-          this.player.animations.play('right');
-        } else if (this.direction === 'left') {
-          this.player.x = this.player.x - 15;
-          this.player.animations.play('left');
-        } else if (this.direction === 'up') {
-          this.player.y = this.player.y - 15;
-          this.player.animations.play('up');
-        } else if (this.direction === 'down') {
-          this.player.y = this.player.y + 15;
-          this.player.animations.play('down');
-        }
-
-        // for each meatPiece, check to see if the player's
-        // location is the same as the meatPiece
-        // had to change to object since destroy will not
-        // remove from array
-        Object.keys(this.meatObj).forEach(i => {
-          this.meatCollision(this.meatObj[i], i);
-        });
+    if (this.me) {
+      if (
+        this.cursors.right.isDown || this.cursors.left.isDown ||
+        this.cursors.up.isDown || this.cursors.down.isDown
+      ) {
+        this.speed = 2;
       } else {
-        this.direction = this.newDirection ? this.newDirection : this.direction;
-
-        if (this.direction === 'right' || this.direction === 'up-right' || this.direction === 'down-right') {
-          this.player.animations.play('stop-right');
-        } else if (this.direction === 'left' || this.direction === 'up-left' || this.direction === 'down-left') {
-          this.player.animations.play('stop-left');
-        } else if (this.direction === 'up') {
-          this.player.animations.play('stop-up');
-        } else if (this.direction === 'down') {
-          this.player.animations.play('stop-down');
-        }
+        this.speed = 0;
       }
 
-      this.socket.emit('move', { x: this.player.x, y: this.player.y, direction: this.direction, id: this.player.id } );
+      if (this.cursors.right.isDown && this.cursors.up.isDown) {
+        this.newDirection = 'up-right';
+      } else if (this.cursors.right.isDown && this.cursors.down.isDown) {
+        this.newDirection = 'down-right';
+      } else if (this.cursors.left.isDown && this.cursors.up.isDown) {
+        this.newDirection = 'up-left';
+      } else if (this.cursors.left.isDown && this.cursors.down.isDown) {
+        this.newDirection = 'down-left';
+      } else if (this.cursors.right.isDown) {
+        this.newDirection = 'right';
+      } else if (this.cursors.left.isDown) {
+        this.newDirection = 'left';
+      } else if (this.cursors.up.isDown) {
+        this.newDirection = 'up';
+      } else if (this.cursors.down.isDown) {
+        this.newDirection = 'down';
+      }
+
+      this.updateDelay++;
+
+      if (this.updateDelay % (8 - this.speed) === 0) {
+        if (this.speed > 0) {
+          if (this.newDirection) {
+            this.direction = this.newDirection;
+            this.newDirection = null;
+          }
+
+          this.me.update(this.direction);
+
+          // for each meatPiece, check to see if the player's
+          // location is the same as the meatPiece
+          // had to change to object since destroy will not
+          // remove from array
+          Object.keys(this.meatObj).forEach(i => {
+            this.meatCollision(this.meatObj[i], i);
+          });
+        } else {
+          this.me.showStopAnimations(this.direction);
+        }
+
+        this.socket.emit('move', { x: this.player.x, y: this.player.y, direction: this.direction, id: this.player.id } );
+      }
     }
   }
 
@@ -197,10 +144,10 @@ export default class Play extends window.Phaser.State {
 
   meatCollision(food, i) {
     if (
-      this.player.x >= food.x - 25 &&
-      this.player.x <= food.x + 25 &&
-      this.player.y >= food.y - 25 &&
-      this.player.y <= food.y + 25
+      this.me.player.x >= food.x - 25 &&
+      this.me.player.x <= food.x + 25 &&
+      this.me.player.y >= food.y - 25 &&
+      this.me.player.y <= food.y + 25
     ) {
       // because the x, y coordinates of the meat and
       // player never line up perfectly, give a range
@@ -223,6 +170,7 @@ export default class Play extends window.Phaser.State {
 
   setEventHandlers() {
     this.socket.on('connect', this.onSocketConnected.bind(this));
+    this.socket.on('new player added', this.onNewPlayerAdded.bind(this));
     this.socket.on('new enemy', this.onNewEnemyPlayer.bind(this));
     this.socket.on('eat', this.onMeatEat.bind(this));
     this.socket.on('move', this.onPlayerMovement.bind(this));
@@ -233,6 +181,13 @@ export default class Play extends window.Phaser.State {
     console.log('Connected to socket server');
 
     this.socket.emit('new player');
+  }
+
+  onNewPlayerAdded(data) {
+    this.me = new LocalPlayer(
+      this.game, data.x, data.y, data.dir,
+      data.type, data.isHunted, 'me'
+    );
   }
 
   onNewEnemyPlayer(data) {

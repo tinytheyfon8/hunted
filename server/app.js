@@ -11,7 +11,6 @@ const players = require('./Players')
 const routes = require('./routes');
 
 const playerInstance = new players();
-console.log(playerInstance.addPlayerAndAssignRole);
 
 // mongoose.connect('mongodb://localhost/hacker-news');
 
@@ -42,8 +41,8 @@ io.on('connection', client => {
       this.emit('new enemy', playerInstance.players[0]);
     }
     var newPlayer = playerInstance.addPlayerAndAssignRole(this.id);
+    this.emit('new player added', newPlayer);
     this.broadcast.emit('new enemy', newPlayer);
-    this.emit('player id', newPlayer.id); //send id to this.player on client
   });
   client.on('disconnect', () => {
     console.log('disconnected');
