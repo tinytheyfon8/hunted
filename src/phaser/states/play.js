@@ -184,6 +184,10 @@ export default class Play extends window.Phaser.State {
   }
 
   onNewPlayerAdded(data) {
+
+    // HARD CODE TO WEREWOLF UNTIL HUMAN SPRITE IS ADDED
+    data.type = 'werewolf';
+
     this.me = new LocalPlayer(
       this.game, data.x, data.y, data.dir,
       data.type, data.isHunted, 'me', data.id
