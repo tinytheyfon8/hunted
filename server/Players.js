@@ -5,7 +5,9 @@ class Players {
     this.players = [];
   }
 
-  detectPlayersCollision(player1, player2) {
+  detectPlayersCollision() {
+    var player1 = this.players[0];
+    var player2 = this.players[1];
     if (
       player1.x >= player2.x - 25 &&
       player1.x <= player2.x + 25 &&
@@ -17,6 +19,18 @@ class Players {
       return false;
     }
   }
+
+  updatePlayers(updatedPlayer) {
+    for(var i = 0; i < this.players.length; i++){
+      if(this.players[i].id === updatedPlayer.id){
+        this.players[i].x = updatedPlayer.x;
+        this.players[i].y = updatedPlayer.y;
+        this.players[i].direction = updatedPlayer.direction;
+        return this.players[i];
+      }
+    }
+  }
+
 
   addPlayerAndAssignRole(id) {
     var player;
