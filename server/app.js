@@ -60,18 +60,16 @@ io.on('connection', client => {
     var updatedObj = playerInstance.updatePlayers(moves);
     var killed = playerInstance.detectPlayersCollision();
     this.broadcast.emit('move', updatedObj);
-    console.log('updated players array', playerInstance.players);
-    console.log("KILLED VAR: ", killed);
+    // console.log('updated players array', playerInstance.players);
+    // console.log("KILLED VAR: ", killed);
     if (killed) {
       this.broadcast.emit('Player killed');
     }
   });
-  // client.on('collision', function(){
-  // });
   client.on('switch', function(){
-    //players.reverseIsHunted();
     playerInstance.reverseIsHunted();
     console.log('player array after switch.....', playerInstance.players);
+    this.emit('switch');
     this.broadcast.emit('switch');
   })
 });
