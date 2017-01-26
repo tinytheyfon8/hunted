@@ -51,6 +51,10 @@ io.on('connection', client => {
     console.log("somthing was eaten", data);
     this.broadcast.emit('eat', data);
   });
+  client.on('forge', function(data) {
+    console.log("somthing was forged", data);
+    this.broadcast.emit('forge', data);
+  });
   client.on('move', function(data) {
     var moves = data;
     var updatedObj = playerInstance.updatePlayers(moves);
@@ -64,8 +68,11 @@ io.on('connection', client => {
   });
   // client.on('collision', function(){
   // });
-  client.on('switchRoles', function(){
+  client.on('switch', function(){
     //players.reverseIsHunted();
+    playerInstance.reverseIsHunted();
+    console.log('player array after switch.....', playerInstance.players);
+    this.broadcast.emit('switch');
   })
 });
 

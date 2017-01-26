@@ -9,6 +9,7 @@ import land from '../assets/images/earth.png';
 import meat from '../assets/images/food.png';
 import silver from '../assets/images/silver.png';
 import werewolf from '../assets/images/werewolf.png';
+import human from '../assets/images/human.png';
 
 export default class Play extends window.Phaser.State {
   constructor() {
@@ -37,6 +38,7 @@ export default class Play extends window.Phaser.State {
     this.game.load.spritesheet('werewolf', werewolf, 46, 46); //46 by 46 is the perfect size
     this.game.load.spritesheet('meat', meat, 16, 17); //load meat sprite
     this.game.load.spritesheet('silver', silver, 37, 35); //load silver sprite
+    this.game.load.spritesheet('human', human, 29, 31);
   }
 
   create() {
@@ -50,13 +52,13 @@ export default class Play extends window.Phaser.State {
 
     this.setEventHandlers();
 
-    for (let i = 0; i < 10; i++) {
-      this.generateSilver(i);
-    }
-
-    for (let i = 0; i < 10; i++) {
-      this.generateMeat(i);
-    }
+    // for (let i = 0; i < 10; i++) {
+    //   this.generateSilver(i);
+    // }
+    //console.log('silverObj', this.silverObj);
+    // for (let i = 0; i < 10; i++) {
+    //   this.generateMeat(i);
+    // }
 
     this.textStyleKey = { font: 'bold 14px sans-serif', fill: '#46c0f9', align: 'center' };
     this.textStyleValue = { font: 'bold 18px sans-serif', fill: '#fff', align: 'center' };
@@ -114,6 +116,10 @@ export default class Play extends window.Phaser.State {
           Object.keys(this.meatObj).forEach(i => {
             this.meatCollision(this.meatObj[i], i);
           });
+
+          Object.keys(this.silverObj).forEach(j => {
+            this.silverCollision(this.silverObj[j], j);
+          });
         } else {
           this.me.showStopAnimations(this.direction);
         }
@@ -130,7 +136,7 @@ export default class Play extends window.Phaser.State {
     const silver = this.game.add.sprite(randomX, randomY, 'silver');
     silver.frame = 7;
 
-    this.meatObj[i] = silver;
+    this.silverObj[i] = silver;
   }
 
   generateMeat(i) {
@@ -157,15 +163,36 @@ export default class Play extends window.Phaser.State {
       food.destroy();
       this.score++;
       this.scoreTextValue.text = this.score.toString();
-      if(this.score === 9){
+      if(this.score % 10 === 0){
         this.switchRoles();
       }
       this.socket.emit('eat', { score: this.score });
     }
   }
 
+  silverCollision(silver, i) {
+    if (
+      this.me.player.x >= silver.x - 25 &&
+      this.me.player.x <= silver.x + 25 &&
+      this.me.player.y >= silver.y - 25 &&
+      this.me.player.y <= silver.y + 25
+    ) {
+      // because the x, y coordinates of the meat and
+      // player never line up perfectly, give a range
+      // of overlapping variables
+      delete this.silverObj[i];
+      silver.destroy();
+      this.score++;
+      this.scoreTextValue.text = this.score.toString();
+      if(this.score % 10 === 0){
+        this.switchRoles();
+      }
+      this.socket.emit('forge', { score: this.score });
+    }
+  }
+
   switchRoles(){
-    console.log('switching started');
+    this.me.isHunted = !this.me.isHunted;
     this.socket.emit('switch');
   }
 
@@ -174,7 +201,9 @@ export default class Play extends window.Phaser.State {
     this.socket.on('new player added', this.onNewPlayerAdded.bind(this));
     this.socket.on('new enemy', this.onNewEnemyPlayer.bind(this));
     this.socket.on('eat', this.onMeatEat.bind(this));
+    this.socket.on('forge', this.onCollectSilver.bind(this));
     this.socket.on('move', this.onPlayerMovement.bind(this));
+    this.socket.on('switch', this.onRoleSwitch.bind(this));
   }
 
   onSocketConnected() {
@@ -186,19 +215,25 @@ export default class Play extends window.Phaser.State {
   onNewPlayerAdded(data) {
 
     // HARD CODE TO WEREWOLF UNTIL HUMAN SPRITE IS ADDED
-    data.type = 'werewolf';
+    //data.type = 'human';
 
     this.me = new LocalPlayer(
       this.game, data.x, data.y, data.dir,
       data.type, data.isHunted, 'me', data.id
     );
+
+    if(data.type === 'human'){
+      for (let i = 0; i < 10; i++) {
+        this.generateSilver(i);
+      }
+    }
   }
 
   onNewEnemyPlayer(data) {
     console.log(data);
 
     // HARD CODE TO WEREWOLF UNTIL HUMAN SPRITE IS ADDED
-    data.type = 'werewolf';
+   // data.type = 'werewolf';
 
     this.enemy = new EnemyPlayer(
       this.game, data.x, data.y, data.dir,
@@ -211,12 +246,25 @@ export default class Play extends window.Phaser.State {
     console.log('other player ate meat', data);
   }
 
+  onCollectSilver(data) {
+    console.log('other player collected silver for weapon', data);
+  }
+
   onPlayerMovement(data) {
-    console.log('this enemy', this.enemy);
+    //console.log('this enemy', this.enemy);
     this.enemy.update(data.x, data.y, data.direction);
   }
 
   onRoleSwitch() {
-    alert('The hunter has become the hunted!');
+    this.me.isHunted = !this.me.isHunted;
+    if(this.me.type === 'werewolf' && this.me.isHunted === true){
+      for (let i = 0; i < 10; i++) {
+        this.generateMeat(i);
+      }
+    } else if(this.me.type === 'human' && this.me.isHunted === true){
+      for (let i = 0; i < 10; i++) {
+        this.generateSilver(i);
+      }
+    }
   }
 }
