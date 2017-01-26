@@ -131,12 +131,12 @@ export default class Play extends window.Phaser.State {
 
   getRandomX() {
     const randomX = Math.floor(Math.random() * 80) * this.squareSize;
-    return randomX >= 1140 ? randomX - 60 : randomX >= 60 ? randomX + 60 : randomX;
+    return randomX >= 1140 ? randomX - 60 : randomX <= 60 ? randomX + 60 : randomX;
   }
 
   getRandomY() {
     const randomY = Math.floor(Math.random() * 40) * this.squareSize;
-    return randomY >= 540 ? randomY - 60 : randomY >= 60 ? randomY + 60 : randomY;
+    return randomY >= 540 ? randomY - 60 : randomY <= 60 ? randomY + 60 : randomY;
   }
 
   generateSilver(i) {
