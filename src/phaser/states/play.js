@@ -52,13 +52,13 @@ export default class Play extends window.Phaser.State {
 
     this.setEventHandlers();
 
-    for (let i = 0; i < 10; i++) {
-      this.generateSilver(i);
-    }
-    console.log('silverObj', this.silverObj);
-    for (let i = 0; i < 10; i++) {
-      this.generateMeat(i);
-    }
+    // for (let i = 0; i < 10; i++) {
+    //   this.generateSilver(i);
+    // }
+    //console.log('silverObj', this.silverObj);
+    // for (let i = 0; i < 10; i++) {
+    //   this.generateMeat(i);
+    // }
 
     this.textStyleKey = { font: 'bold 14px sans-serif', fill: '#46c0f9', align: 'center' };
     this.textStyleValue = { font: 'bold 18px sans-serif', fill: '#fff', align: 'center' };
@@ -118,7 +118,6 @@ export default class Play extends window.Phaser.State {
           });
 
           Object.keys(this.silverObj).forEach(j => {
-            console.log('is checking silver collision', j);
             this.silverCollision(this.silverObj[j], j);
           });
         } else {
@@ -164,7 +163,7 @@ export default class Play extends window.Phaser.State {
       food.destroy();
       this.score++;
       this.scoreTextValue.text = this.score.toString();
-      if(this.score % 9 === 0){
+      if(this.score % 10 === 0){
         this.switchRoles();
       }
       this.socket.emit('eat', { score: this.score });
@@ -172,7 +171,6 @@ export default class Play extends window.Phaser.State {
   }
 
   silverCollision(silver, i) {
-    console.log('silver', silver);
     if (
       this.me.player.x >= silver.x - 25 &&
       this.me.player.x <= silver.x + 25 &&
@@ -186,7 +184,7 @@ export default class Play extends window.Phaser.State {
       silver.destroy();
       this.score++;
       this.scoreTextValue.text = this.score.toString();
-      if(this.score % 9 === 0){
+      if(this.score % 10 === 0){
         this.switchRoles();
       }
       this.socket.emit('forge', { score: this.score });
@@ -194,7 +192,7 @@ export default class Play extends window.Phaser.State {
   }
 
   switchRoles(){
-    console.log('switching started');
+    this.me.isHunted = !this.me.isHunted;
     this.socket.emit('switch');
   }
 
@@ -205,6 +203,7 @@ export default class Play extends window.Phaser.State {
     this.socket.on('eat', this.onMeatEat.bind(this));
     this.socket.on('forge', this.onCollectSilver.bind(this));
     this.socket.on('move', this.onPlayerMovement.bind(this));
+    this.socket.on('switch', this.onRoleSwitch.bind(this));
   }
 
   onSocketConnected() {
@@ -222,6 +221,12 @@ export default class Play extends window.Phaser.State {
       this.game, data.x, data.y, data.dir,
       data.type, data.isHunted, 'me', data.id
     );
+
+    if(data.type === 'human'){
+      for (let i = 0; i < 10; i++) {
+        this.generateSilver(i);
+      }
+    }
   }
 
   onNewEnemyPlayer(data) {
@@ -246,11 +251,20 @@ export default class Play extends window.Phaser.State {
   }
 
   onPlayerMovement(data) {
-    console.log('this enemy', this.enemy);
+    //console.log('this enemy', this.enemy);
     this.enemy.update(data.x, data.y, data.direction);
   }
 
   onRoleSwitch() {
-    alert('The hunter has become the hunted!');
+    this.me.isHunted = !this.me.isHunted;
+    if(this.me.type === 'werewolf' && this.me.isHunted === true){
+      for (let i = 0; i < 10; i++) {
+        this.generateMeat(i);
+      }
+    } else if(this.me.type === 'human' && this.me.isHunted === true){
+      for (let i = 0; i < 10; i++) {
+        this.generateSilver(i);
+      }
+    }
   }
 }

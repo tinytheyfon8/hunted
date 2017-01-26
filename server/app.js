@@ -68,8 +68,11 @@ io.on('connection', client => {
   });
   // client.on('collision', function(){
   // });
-  client.on('switchRoles', function(){
+  client.on('switch', function(){
     //players.reverseIsHunted();
+    playerInstance.reverseIsHunted();
+    console.log('player array after switch.....', playerInstance.players);
+    this.broadcast.emit('switch');
   })
 });
 
