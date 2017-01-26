@@ -20,7 +20,7 @@ export default class Play extends window.Phaser.State {
     this.land = null;
     this.meatObj = {};
     this.silverObj = {};
-    this.squareSize = 46;
+    this.squareSize = 15;
     this.score = 0;
     this.speed = 0;
     this.updateDelay = 0;
@@ -42,9 +42,9 @@ export default class Play extends window.Phaser.State {
   }
 
   create() {
-    this.game.world.setBounds(0, 0, 720, 600);
+    this.game.world.setBounds(0, 0, 1200, 600);
 
-    this.land = this.game.add.tileSprite(0, 0, 720, 600, 'land');
+    this.land = this.game.add.tileSprite(0, 0, 1200, 600, 'land');
 
     this.cursors = this.game.input.keyboard.createCursorKeys();
 
@@ -129,21 +129,25 @@ export default class Play extends window.Phaser.State {
     }
   }
 
-  generateSilver(i) {
-    const randomX = Math.floor(Math.random() * 14) * this.squareSize;
-    const randomY = Math.floor(Math.random() * 12) * this.squareSize;
+  getRandomX() {
+    const randomX = Math.floor(Math.random() * 80) * this.squareSize;
+    return randomX >= 1140 ? randomX - 60 : randomX <= 60 ? randomX + 60 : randomX;
+  }
 
-    const silver = this.game.add.sprite(randomX, randomY, 'silver');
+  getRandomY() {
+    const randomY = Math.floor(Math.random() * 40) * this.squareSize;
+    return randomY >= 540 ? randomY - 60 : randomY <= 60 ? randomY + 60 : randomY;
+  }
+
+  generateSilver(i) {
+    const silver = this.game.add.sprite(this.getRandomX(), this.getRandomY(), 'silver');
     silver.frame = 7;
 
     this.silverObj[i] = silver;
   }
 
   generateMeat(i) {
-    const randomX = Math.floor(Math.random() * 14) * this.squareSize;
-    const randomY = Math.floor(Math.random() * 12) * this.squareSize;
-
-    const meat = this.game.add.sprite(randomX, randomY, 'meat');
+    const meat = this.game.add.sprite(this.getRandomX(), this.getRandomY(), 'meat');
     meat.frame = 140;
 
     this.meatObj[i] = meat;
@@ -163,7 +167,7 @@ export default class Play extends window.Phaser.State {
       food.destroy();
       this.score++;
       this.scoreTextValue.text = this.score.toString();
-      if(this.score % 10 === 0){
+      if (this.score % 10 === 0) {
         this.switchRoles();
       }
       this.socket.emit('eat', { score: this.score });
@@ -184,15 +188,14 @@ export default class Play extends window.Phaser.State {
       silver.destroy();
       this.score++;
       this.scoreTextValue.text = this.score.toString();
-      if(this.score % 10 === 0){
+      if (this.score % 10 === 0) {
         this.switchRoles();
       }
       this.socket.emit('forge', { score: this.score });
     }
   }
 
-  switchRoles(){
-    this.me.isHunted = !this.me.isHunted;
+  switchRoles() {
     this.socket.emit('switch');
   }
 
@@ -222,7 +225,7 @@ export default class Play extends window.Phaser.State {
       data.type, data.isHunted, 'me', data.id
     );
 
-    if(data.type === 'human'){
+    if (data.type === 'human') {
       for (let i = 0; i < 10; i++) {
         this.generateSilver(i);
       }
@@ -256,15 +259,18 @@ export default class Play extends window.Phaser.State {
   }
 
   onRoleSwitch() {
-    this.me.isHunted = !this.me.isHunted;
-    if(this.me.type === 'werewolf' && this.me.isHunted === true){
+    this.me.changeHuntedStatus();
+    if (this.me.type === 'werewolf' && this.me.isHunted) {
       for (let i = 0; i < 10; i++) {
         this.generateMeat(i);
       }
-    } else if(this.me.type === 'human' && this.me.isHunted === true){
+    } else if (this.me.type === 'human' && !this.me.isHunted) {
+      this.me.humanHunterAnimations();
+    } else if (this.me.type === 'human' && this.me.isHunted) {
       for (let i = 0; i < 10; i++) {
         this.generateSilver(i);
       }
+      this.me.humanHuntedAnimations();
     }
   }
 }

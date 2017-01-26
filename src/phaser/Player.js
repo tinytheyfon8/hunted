@@ -18,33 +18,12 @@ export default class Player {
       this.player.scale.setTo(2,2);
     }
 
-    if(this.type === "werewolf"){
-      this.player.animations.add('left', [0, 9, 18, 27], 10, true);
-      this.player.animations.add('down', [1, 10, 19, 28], 10, true);
-      this.player.animations.add('right', [2, 11, 20, 29], 10, true);
-      this.player.animations.add('up', [3, 12, 21, 30], 10, true);
-      this.player.animations.add('stop-left', [0], 10, true);
-      this.player.animations.add('stop-down', [1], 10, true);
-      this.player.animations.add('stop-right', [2], 10, true);
-      this.player.animations.add('stop-up', [3], 10, true);
-    } else if(this.type === "human" && this.isHunted === true){
-      this.player.animations.add('left', [2], 10, true);
-      this.player.animations.add('down', [1, 15], 10, true);
-      this.player.animations.add('right', [4], 10, true);
-      this.player.animations.add('up', [3, 17], 10, true);
-      this.player.animations.add('stop-left', [2], 10, true);
-      this.player.animations.add('stop-down', [1], 10, true);
-      this.player.animations.add('stop-right', [4], 10, true);
-      this.player.animations.add('stop-up', [3], 10, true);
-    } else if (this.type === "human" && this.isHunted === false) {
-      this.player.animations.add('left', [6], 20, true);
-      this.player.animations.add('down', [5], 10, true);
-      this.player.animations.add('right', [8], 10, true);
-      this.player.animations.add('up', [7], 10, true);
-      this.player.animations.add('stop-left', [6], 10, true);
-      this.player.animations.add('stop-down', [5], 10, true);
-      this.player.animations.add('stop-right', [8], 10, true);
-      this.player.animations.add('stop-up', [7], 10, true);
+    if (this.type === 'werewolf') {
+      this.werewolfAnimations();
+    } else if (this.type === 'human' && this.isHunted) {
+      this.humanHuntedAnimations();
+    } else if (this.type === 'human' && !this.isHunted) {
+      this.humanHunterAnimations();
     }
 
     this.game.physics.enable(this.player, window.Phaser.Physics.ARCADE);
@@ -53,6 +32,35 @@ export default class Player {
     this.player.events.onOutOfBounds.add(function() {
       console.log('out of bounds');
     });
+  }
+
+  werewolfAnimations() {
+    const werewolfAnims = {
+      'left': [0, 9, 18, 27], 'down': [1, 10, 19, 28], 'right': [2, 11, 20, 29],
+      'up': [3, 12, 21, 30], 'stop-left': [0], 'stop-down': [1], 'stop-right': [2],
+      'stop-up': [3]
+    };
+    this.addAnimations(werewolfAnims);
+  }
+
+  humanHuntedAnimations() {
+    const humanHuntAnims = {
+      'left': [2], 'down': [1, 15], 'right': [4], 'up': [3, 17], 'stop-left': [2],
+      'stop-down': [1], 'stop-right': [4], 'stop-up': [3]
+    };
+    this.addAnimations(humanHuntAnims);
+  }
+
+  humanHunterAnimations() {
+    const humanAnims = {
+      'left': [6], 'down': [5], 'right': [8], 'up': [7], 'stop-left': [6],
+      'stop-down': [5], 'stop-right': [8], 'stop-up': [7]
+    };
+    this.addAnimations(humanAnims);
+  }
+
+  addAnimations(obj) {
+    Object.keys(obj).forEach(v => this.player.animations.add(v, obj[v], 10, true));
   }
 
   showStopAnimations(direction) {
