@@ -109,6 +109,7 @@ io.on('connection', client => {
       io.emit('player killed');
     }
   });
+
   client.on('switch', function(){
     playerInstance.reverseIsHunted();
     console.log('player array after switch.....', playerInstance.players);
