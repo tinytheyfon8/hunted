@@ -63,7 +63,7 @@ io.on('connection', client => {
     // console.log('updated players array', playerInstance.players);
     // console.log("KILLED VAR: ", killed);
     if (killed) {
-      this.broadcast.emit('Player killed');
+      io.emit('player killed');
     }
   });
   client.on('switch', function(){

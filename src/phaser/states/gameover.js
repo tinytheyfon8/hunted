@@ -16,6 +16,7 @@ export default class GameOver extends window.Phaser.State {
   }
 
   startGame() {
-    this.game.state.start('Play');
+    // this.game.state.start('Play');
+    window.location.reload();
   }
 }

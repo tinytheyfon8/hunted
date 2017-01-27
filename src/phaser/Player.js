@@ -14,7 +14,7 @@ export default class Player {
 
     this.player = this.game.add.sprite(x, y, this.type);
 
-    if(this.type === 'human'){
+    if (this.type === 'human') {
       this.player.scale.setTo(2,2);
     }
 

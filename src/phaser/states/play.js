@@ -52,14 +52,6 @@ export default class Play extends window.Phaser.State {
 
     this.setEventHandlers();
 
-    // for (let i = 0; i < 10; i++) {
-    //   this.generateSilver(i);
-    // }
-    //console.log('silverObj', this.silverObj);
-    // for (let i = 0; i < 10; i++) {
-    //   this.generateMeat(i);
-    // }
-
     this.textStyleKey = { font: 'bold 14px sans-serif', fill: '#46c0f9', align: 'center' };
     this.textStyleValue = { font: 'bold 18px sans-serif', fill: '#fff', align: 'center' };
 
@@ -139,18 +131,22 @@ export default class Play extends window.Phaser.State {
     return randomY >= 540 ? randomY - 60 : randomY <= 60 ? randomY + 60 : randomY;
   }
 
-  generateSilver(i) {
-    const silver = this.game.add.sprite(this.getRandomX(), this.getRandomY(), 'silver');
-    silver.frame = 7;
+  generateSilver() {
+    for (let i = 0; i < 10; i++) {
+      const silver = this.game.add.sprite(this.getRandomX(), this.getRandomY(), 'silver');
+      silver.frame = 7;
 
-    this.silverObj[i] = silver;
+      this.silverObj[i] = silver;
+    }
   }
 
-  generateMeat(i) {
-    const meat = this.game.add.sprite(this.getRandomX(), this.getRandomY(), 'meat');
-    meat.frame = 140;
+  generateMeat() {
+    for (let i = 0; i < 10; i++) {
+      const meat = this.game.add.sprite(this.getRandomX(), this.getRandomY(), 'meat');
+      meat.frame = 140;
 
-    this.meatObj[i] = meat;
+      this.meatObj[i] = meat;
+    }
   }
 
   meatCollision(food, i) {
@@ -207,6 +203,7 @@ export default class Play extends window.Phaser.State {
     this.socket.on('forge', this.onCollectSilver.bind(this));
     this.socket.on('move', this.onPlayerMovement.bind(this));
     this.socket.on('switch', this.onRoleSwitch.bind(this));
+    this.socket.on('player killed', this.onPlayerCollision.bind(this));
   }
 
   onSocketConnected() {
@@ -220,14 +217,15 @@ export default class Play extends window.Phaser.State {
     // HARD CODE TO WEREWOLF UNTIL HUMAN SPRITE IS ADDED
     //data.type = 'human';
 
-    this.me = new LocalPlayer(
-      this.game, data.x, data.y, data.dir,
-      data.type, data.isHunted, 'me', data.id
-    );
+    if (!this.getPlayerById(data.id)) {
 
-    if (data.type === 'human') {
-      for (let i = 0; i < 10; i++) {
-        this.generateSilver(i);
+      this.me = new LocalPlayer(
+        this.game, data.x, data.y, data.dir,
+        data.type, data.isHunted, 'me', data.id
+      );
+
+      if (data.type === 'human') {
+        this.generateSilver();
       }
     }
   }
@@ -237,12 +235,14 @@ export default class Play extends window.Phaser.State {
 
     // HARD CODE TO WEREWOLF UNTIL HUMAN SPRITE IS ADDED
    // data.type = 'werewolf';
+   if (!this.getPlayerById(data.id)) {
 
-    this.enemy = new EnemyPlayer(
-      this.game, data.x, data.y, data.dir,
-      data.type, data.isHunted, 'enemy', data.id
-    );
-    console.log('enemy added', this.enemy);
+      this.enemy = new EnemyPlayer(
+        this.game, data.x, data.y, data.dir,
+        data.type, data.isHunted, 'enemy', data.id
+      );
+      console.log('enemy added', this.enemy);
+    }
   }
 
   onMeatEat(data) {
@@ -261,16 +261,28 @@ export default class Play extends window.Phaser.State {
   onRoleSwitch() {
     this.me.changeHuntedStatus();
     if (this.me.type === 'werewolf' && this.me.isHunted) {
-      for (let i = 0; i < 10; i++) {
-        this.generateMeat(i);
-      }
+      this.generateMeat();
     } else if (this.me.type === 'human' && !this.me.isHunted) {
       this.me.humanHunterAnimations();
     } else if (this.me.type === 'human' && this.me.isHunted) {
-      for (let i = 0; i < 10; i++) {
-        this.generateSilver(i);
-      }
+      this.generateSilver();
       this.me.humanHuntedAnimations();
     }
+  }
+
+  onPlayerCollision() {
+    this.me.player.destroy();
+    this.enemy.player.destroy();
+    this.me = null;
+    this.enemy = null;
+    this.score = 0;
+    this.meatObj = {};
+    this.silverObj = {};
+    this.game.world.removeAll();
+    this.game.state.start('GameOver');
+  }
+
+  getPlayerById(id) {
+    return (this.me && this.me.id === id) || (this.enemy && this.enemy.id === id);
   }
 }
