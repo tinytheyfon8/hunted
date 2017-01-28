@@ -50,14 +50,20 @@ export default class Play extends window.Phaser.State {
 
     this.socket = io.connect();
 
-    this.setEventHandlers();
-
     this.textStyleKey = { font: 'bold 14px sans-serif', fill: '#46c0f9', align: 'center' };
     this.textStyleValue = { font: 'bold 18px sans-serif', fill: '#fff', align: 'center' };
 
     // Score.
     this.game.add.text(30, 20, 'SCORE', this.textStyleKey);
     this.scoreTextValue = this.game.add.text(90, 18, this.score.toString(), this.textStyleValue);
+
+    this.addLocalPlayer();
+
+    this.setEventHandlers();
+
+    window.addEventListener("beforeunload", () => {
+      this.socket.emit('disconnect');
+    });
   }
 
   update() {
@@ -117,6 +123,25 @@ export default class Play extends window.Phaser.State {
         }
 
         this.socket.emit('move', { x: this.me.player.x, y: this.me.player.y, direction: this.me.direction, id: this.me.id } );
+      }
+    }
+  }
+
+  addLocalPlayer() {
+    // if (
+    //   !this.getPlayerById(this.socket.id) &&
+    //   (window.characterSelected === 'human' ||
+    //   window.characterSelected === 'werewolf')
+    // ) {
+    if (window.characterSelected === 'human' || window.characterSelected === 'werewolf') {
+      const char = window.characterSelected;
+      this.me = new LocalPlayer(
+        this.game, char === 'human' ? 500 : 100, char === 'human' ? 500: 100,
+        'left', char, char === 'human', 'me', 0
+      );
+
+      if (char === 'human') {
+        this.generateSilver();
       }
     }
   }
@@ -209,7 +234,15 @@ export default class Play extends window.Phaser.State {
   onSocketConnected() {
     console.log('Connected to socket server');
 
-    this.socket.emit('new player');
+    this.me.updateId(this.socket.id);
+    this.socket.emit('new player', {
+      x: this.me.player.x,
+      y: this.me.player.y,
+      direction: this.me.direction,
+      type: this.me.type,
+      isHunted: this.me.isHunted,
+      id: this.me.id
+    });
   }
 
   onNewPlayerAdded(data) {
@@ -217,17 +250,17 @@ export default class Play extends window.Phaser.State {
     // HARD CODE TO WEREWOLF UNTIL HUMAN SPRITE IS ADDED
     //data.type = 'human';
 
-    if (!this.getPlayerById(data.id)) {
-
-      this.me = new LocalPlayer(
-        this.game, data.x, data.y, data.dir,
-        data.type, data.isHunted, 'me', data.id
-      );
-
-      if (data.type === 'human') {
-        this.generateSilver();
-      }
-    }
+    // if (!this.getPlayerById(data.id)) {
+    //
+    //   this.me = new LocalPlayer(
+    //     this.game, data.x, data.y, data.dir,
+    //     data.type, data.isHunted, 'me', data.id
+    //   );
+    //
+    //   if (data.type === 'human') {
+    //     this.generateSilver();
+    //   }
+    // }
   }
 
   onNewEnemyPlayer(data) {

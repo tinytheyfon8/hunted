@@ -78,4 +78,8 @@ export default class Player {
   changeHuntedStatus() {
     this.isHunted = !this.isHunted;
   }
+
+  updateId(id) {
+    this.id = id;
+  }
 }
