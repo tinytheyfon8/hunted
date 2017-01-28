@@ -118,11 +118,12 @@ export default class Play extends window.Phaser.State {
           Object.keys(this.silverObj).forEach(j => {
             this.silverCollision(this.silverObj[j], j);
           });
+          this.socket.emit('move', { x: this.me.player.x, y: this.me.player.y, direction: this.me.direction, id: this.me.id } );
         } else {
           this.me.showStopAnimations(this.direction);
         }
 
-        this.socket.emit('move', { x: this.me.player.x, y: this.me.player.y, direction: this.me.direction, id: this.me.id } );
+        // this.socket.emit('move', { x: this.me.player.x, y: this.me.player.y, direction: this.me.direction, id: this.me.id } );
       }
     }
   }
@@ -221,9 +222,9 @@ export default class Play extends window.Phaser.State {
   }
 
   setEventHandlers() {
-    this.socket.on('connect', this.onSocketConnected.bind(this));
     this.socket.on('new player added', this.onNewPlayerAdded.bind(this));
     this.socket.on('new enemy', this.onNewEnemyPlayer.bind(this));
+    this.socket.on('connect', this.onSocketConnected.bind(this));
     this.socket.on('eat', this.onMeatEat.bind(this));
     this.socket.on('forge', this.onCollectSilver.bind(this));
     this.socket.on('move', this.onPlayerMovement.bind(this));
@@ -247,27 +248,9 @@ export default class Play extends window.Phaser.State {
 
   onNewPlayerAdded(data) {
 
-    // HARD CODE TO WEREWOLF UNTIL HUMAN SPRITE IS ADDED
-    //data.type = 'human';
-
-    // if (!this.getPlayerById(data.id)) {
-    //
-    //   this.me = new LocalPlayer(
-    //     this.game, data.x, data.y, data.dir,
-    //     data.type, data.isHunted, 'me', data.id
-    //   );
-    //
-    //   if (data.type === 'human') {
-    //     this.generateSilver();
-    //   }
-    // }
   }
 
   onNewEnemyPlayer(data) {
-    console.log(data);
-
-    // HARD CODE TO WEREWOLF UNTIL HUMAN SPRITE IS ADDED
-   // data.type = 'werewolf';
    if (!this.getPlayerById(data.id)) {
 
       this.enemy = new EnemyPlayer(

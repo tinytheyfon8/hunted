@@ -75,8 +75,6 @@ class Players {
   }
 
   removePlayerById(id) {
-    console.log('CALLED REMOVE PLAYER BY ID:', id);
-    console.log('PLAYERS BEFORE:', this.players);
     let idx;
     let temp = this.players;
     this.players = [];
@@ -89,7 +87,6 @@ class Players {
       temp.splice(idx, 1);
     }
     this.players = temp;
-    console.log('PLAYERS AFTER:', this.players);
   }
 }
 

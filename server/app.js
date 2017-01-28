@@ -49,12 +49,10 @@ io.on('connection', client => {
     }
     let newPlayer = playerInstance.addPlayer(data);
     // var newPlayer = playerInstance.addPlayerAndAssignRole(this.id);
-    console.log(newPlayer);
     this.emit('new player added', newPlayer);
     this.broadcast.emit('new enemy', newPlayer);
   });
   client.on('disconnect', function(data) {
-    console.log('ID:', this.id);
     playerInstance.removePlayerById(this.id);
     console.log('disconnected');
   });
