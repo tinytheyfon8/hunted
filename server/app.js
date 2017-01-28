@@ -23,7 +23,14 @@ if (process.env.NODE_ENV === 'production') {
   app.use(express.static(path.resolve(__dirname, '..', 'build')));
 }
 
-app.use('/', routes);
+app.get('/api/players/:isNewPlayer', (req, res) => {
+  if (req.params.isNewPlayer === 'true' && playerInstance.players.length >= 2) {
+    playerInstance.clearPlayers();
+  }
+  res.json(playerInstance.players);
+});
+
+// app.use('/', routes);
 
 // Catch everything that isn't in routes and send
 // to client so react-router can handle it
@@ -40,11 +47,13 @@ io.on('connection', client => {
     } else if (playerInstance.players.length === 1) {
       this.emit('new enemy', playerInstance.players[0]);
     }
-    var newPlayer = playerInstance.addPlayerAndAssignRole(this.id);
+    let newPlayer = playerInstance.addPlayer(data);
+    // var newPlayer = playerInstance.addPlayerAndAssignRole(this.id);
     this.emit('new player added', newPlayer);
     this.broadcast.emit('new enemy', newPlayer);
   });
-  client.on('disconnect', () => {
+  client.on('disconnect', function(data) {
+    playerInstance.removePlayerById(this.id);
     console.log('disconnected');
   });
   client.on('eat', function(data) {
@@ -63,6 +72,7 @@ io.on('connection', client => {
     // console.log('updated players array', playerInstance.players);
     // console.log("KILLED VAR: ", killed);
     if (killed) {
+      playerInstance.clearPlayers();
       io.emit('player killed');
     }
   });

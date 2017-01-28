@@ -42,6 +42,16 @@ class Players {
     }
   }
 
+  addPlayer(data, id) {
+    let player;
+
+    player = new Player(
+      data.x, data.y, data.direction, data.type, data.isHunted, data.id
+    );
+    this.players.push(player);
+
+    return player;
+  }
 
   addPlayerAndAssignRole(id) {
     var player;
@@ -62,6 +72,21 @@ class Players {
 
   clearPlayers() {
     this.players = [];
+  }
+
+  removePlayerById(id) {
+    let idx;
+    let temp = this.players;
+    this.players = [];
+    temp.forEach((player, i) => {
+      if (player.id === id) {
+        idx = i;
+      }
+    });
+    if (!isNaN(idx)) {
+      temp.splice(idx, 1);
+    }
+    this.players = temp;
   }
 }
 

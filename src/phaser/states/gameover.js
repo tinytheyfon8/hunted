@@ -12,7 +12,9 @@ export default class GameOver extends window.Phaser.State {
 
     imageBtn.anchor.set(0.5);
 
-    this.game.add.text(140, 16, 'GAME OVER   CLICK TO PLAY AGAIN', { fill: '#fff' });
+    this.game.add.text(510, 0, 'GAME OVER', { font: 'bold 36px sans-serif', fill: '#fff' })
+
+    this.game.add.text(300, 575, 'CLICK EINSTEIN TO GO BACK TO MAIN MENU', { fill: '#fff' });
   }
 
   startGame() {
