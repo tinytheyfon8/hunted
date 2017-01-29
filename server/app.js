@@ -4,7 +4,8 @@ const db = require('./config/db.js');
 const morgan = require('morgan');
 const bodyParser = require('body-parser');
 const path = require('path');
-const players = require('./Players')
+const players = require('./Players');
+const gameSave = require('./gameSave.js');
 const routes = require('./routes');
 const cookieParser = require('cookie-parser');
 const passport = require('passport');
@@ -107,6 +108,7 @@ io.on('connection', client => {
     var killed = playerInstance.detectPlayersCollision();
     this.broadcast.emit('move', updatedObj);
     if (killed) {
+      gameSave(playerInstance.players);
       playerInstance.clearPlayers();
       io.emit('player killed');
     }
