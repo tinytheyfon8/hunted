@@ -1,6 +1,7 @@
 // Play game state
 
 import io from 'socket.io-client';
+import axios from 'axios';
 
 import EnemyPlayer from '../EnemyPlayer';
 import LocalPlayer from '../LocalPlayer';
@@ -192,7 +193,7 @@ export default class Play extends window.Phaser.State {
       if (this.score % 10 === 0) {
         this.switchRoles();
       }
-      this.socket.emit('eat', { score: this.score });
+      this.socket.emit('eat', { id: this.me.id, score: this.score });
     }
   }
 
@@ -213,7 +214,7 @@ export default class Play extends window.Phaser.State {
       if (this.score % 10 === 0) {
         this.switchRoles();
       }
-      this.socket.emit('forge', { score: this.score });
+      this.socket.emit('forge', { id: this.me.id, score: this.score });
     }
   }
 
@@ -230,6 +231,8 @@ export default class Play extends window.Phaser.State {
     this.socket.on('move', this.onPlayerMovement.bind(this));
     this.socket.on('switch', this.onRoleSwitch.bind(this));
     this.socket.on('player killed', this.onPlayerCollision.bind(this));
+    this.socket.on('winner', this.onWinning.bind(this));
+    this.socket.on('loser', this.onLosing.bind(this));
   }
 
   onSocketConnected() {
@@ -242,7 +245,9 @@ export default class Play extends window.Phaser.State {
       direction: this.me.direction,
       type: this.me.type,
       isHunted: this.me.isHunted,
-      id: this.me.id
+      id: this.me.id,
+      score: 0,
+      playerID: document.cookie
     });
   }
 
@@ -270,7 +275,6 @@ export default class Play extends window.Phaser.State {
   }
 
   onPlayerMovement(data) {
-    //console.log('this enemy', this.enemy);
     this.enemy.update(data.x, data.y, data.direction);
   }
 
@@ -300,5 +304,30 @@ export default class Play extends window.Phaser.State {
 
   getPlayerById(id) {
     return (this.me && this.me.id === id) || (this.enemy && this.enemy.id === id);
+  }
+
+  onWinning(data) {
+    if(this.me.id === data.id){
+      data.score += 100;
+      data.won = true;
+      axios.post('/gameover', data)
+        .then((err, game) => {
+          if(err) {
+            console.log(err);
+          }
+        });
+    }
+    
+  }
+
+  onLosing(data) {
+    if(this.me.id === data.id){
+      axios.post('/gameover', data)
+        .then((err, game) => {
+          if(err) {
+            console.log(err);
+          }
+        });
+    }
   }
 }

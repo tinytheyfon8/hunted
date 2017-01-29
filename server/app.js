@@ -4,7 +4,8 @@ const db = require('./config/db.js');
 const morgan = require('morgan');
 const bodyParser = require('body-parser');
 const path = require('path');
-const players = require('./Players')
+const players = require('./Players');
+const gameSave = require('./gameSave.js');
 const routes = require('./routes');
 const cookieParser = require('cookie-parser');
 const passport = require('passport');
@@ -16,6 +17,7 @@ const session = require('express-session');
 const server = require('http').createServer(app);
 const io = require('socket.io')(server);
 const playerInstance = new players();
+var playerID;
 
 // connect to mongoDB
 mongoose.connect(db.url, function(err){
@@ -62,6 +64,19 @@ app.get('/api/players/:isNewPlayer', (req, res) => {
   res.json(playerInstance.players);
 });
 
+// app.use((req, res, next) => { //attempt to set up middleware to get playerID from req.session
+//   if(req.session) {
+//     console.log('middleware started..', req.session);
+//     if(req.session.passport){
+//       playerID = req.session.passport.user;
+//       console.log('playerID in middleware', playerID, req.session.passport.user);
+//       playerInstance.players[playerInstance.players.length-1].playerID = playerID;
+//       console.log('players w/ id', playerInstance.players);
+//     }    
+//   }
+//   next();
+// });
+
 app.use('/', routes);
 
 // Catch everything that isn't in routes and send
@@ -91,11 +106,13 @@ io.on('connection', client => {
 
   client.on('eat', function(data) {
     console.log("somthing was eaten", data);
+    playerInstance.updatePlayerScore(data);
     this.broadcast.emit('eat', data);
   });
 
   client.on('forge', function(data) {
     console.log("somthing was forged", data);
+    playerInstance.updatePlayerScore(data);
     this.broadcast.emit('forge', data);
   });
 
@@ -105,10 +122,15 @@ io.on('connection', client => {
     var killed = playerInstance.detectPlayersCollision();
     this.broadcast.emit('move', updatedObj);
     if (killed) {
+      var winner = playerInstance.getWinner(playerInstance.players);
+      var loser = playerInstance.getLoser(playerInstance.players);
+      io.emit('winner', winner);
+      io.emit('loser', loser);
       playerInstance.clearPlayers();
       io.emit('player killed');
     }
   });
+
   client.on('switch', function(){
     playerInstance.reverseIsHunted();
     console.log('player array after switch.....', playerInstance.players);
