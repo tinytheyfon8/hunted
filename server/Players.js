@@ -55,7 +55,7 @@ class Players {
     let player;
 
     player = new Player(
-      data.x, data.y, data.direction, data.type, data.isHunted, data.id, 0
+      data.x, data.y, data.direction, data.type, data.isHunted, data.id, 0, false
     );
     this.players.push(player);
 
@@ -97,14 +97,22 @@ class Players {
     }
     this.players = temp;
   }
+
+  getWinner(playersArr) {
+    for(let i = 0; i < playersArr.length; i++) {
+      if(playersArr[i].isHunted === false) {
+        return playersArr[i];
+      }
+    }
+  }
+
+  getLoser(playersArr) {
+    for(let i = 0; i < playersArr.length; i++) {
+      if(playersArr[i].isHunted === true) {
+        return playersArr[i];
+      }
+    }
+  }
 }
 
 module.exports = Players;
-
-
-
-// * PLayer methods
-//   - detect player collision
-//   - get player by id
-//   - change isHunted boolean
-//   -

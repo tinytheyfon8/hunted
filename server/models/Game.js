@@ -1,10 +1,10 @@
 var mongoose = require('mongoose');
 
 var gameSchema = mongoose.Schema({
-    player1_id: String,
-    player1_score: Number,
-    player2_id: String,
-    player2_score: Number,
+    player_id: String,
+    player_type: String,
+    player_score: Number,
+    player_won: Boolean,
     date: Date
 });
 
