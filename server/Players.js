@@ -53,19 +53,6 @@ class Players {
     return player;
   }
 
-  addPlayerAndAssignRole(id) {
-    var player;
-    if(this.players.length && this.players.length === 1) {
-      player = new Player(500, 500, 'left', 'human', true, id)
-      this.players.push(player);
-      return player;
-    } else {
-      player = new Player(100, 100, 'right', 'werewolf', false, id)
-      this.players.push(player);
-      return player;
-    }
-  }
-
   reverseIsHunted() {
     this.players.forEach(player => player.isHunted = !player.isHunted)
   }
