@@ -40,9 +40,9 @@ export default class MenuItem extends window.Phaser.Text {
 
   navigate() {
     if (this.targetState) {
-      if ((this.text === 'New game' && window.checkedForPlayers) || this.text !== 'New Game') {
+      if ((this.text === 'New game' && window.app.model.checkedForPlayers) || this.text !== 'New Game') {
         if (this.text === 'Human' || this.text === 'Werewolf') {
-          window.characterSelected = this.text.toLowerCase();
+          window.app.model.characterSelected = this.text.toLowerCase();
         }
         this.game.state.start(this.targetState);
       }

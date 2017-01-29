@@ -36,7 +36,7 @@ export default class Menu extends window.Phaser.State {
 
       option = this.options[i];
 
-      if (window.joinedPlayer && window.joinedPlayer === option.text.toLowerCase()) {
+      if (window.app.model.joinedPlayer && window.app.model.joinedPlayer === option.text.toLowerCase()) {
         continue;
       }
 

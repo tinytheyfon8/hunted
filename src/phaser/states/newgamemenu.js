@@ -25,8 +25,8 @@ export default class NewGameMenu extends Menu {
       .then(res => {
         console.log('PLAYERS', res.data);
         if (res.data.length) {
-          window.joinedPlayer = res.data[0].type;
-          window.checkedForPlayers = true;
+          window.app.model.joinedPlayer = res.data[0].type;
+          window.app.model.checkedForPlayers = true;
         }
 
         this.generateMenu();

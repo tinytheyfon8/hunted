@@ -119,7 +119,15 @@ export default class Play extends window.Phaser.State {
           Object.keys(this.silverObj).forEach(j => {
             this.silverCollision(this.silverObj[j], j);
           });
-          this.socket.emit('move', { x: this.me.player.x, y: this.me.player.y, direction: this.me.direction, id: this.me.id } );
+          this.socket.emit(
+            'move',
+            {
+              x: this.me.player.x,
+              y: this.me.player.y,
+              direction: this.me.direction,
+              id: this.me.id
+            }
+          );
         } else {
           this.me.showStopAnimations(this.direction);
         }
@@ -132,14 +140,23 @@ export default class Play extends window.Phaser.State {
   addLocalPlayer() {
     // if (
     //   !this.getPlayerById(this.socket.id) &&
-    //   (window.characterSelected === 'human' ||
-    //   window.characterSelected === 'werewolf')
+    //   (window.app.model.characterSelected === 'human' ||
+    //   window.app.model.characterSelected === 'werewolf')
     // ) {
-    if (window.characterSelected === 'human' || window.characterSelected === 'werewolf') {
-      const char = window.characterSelected;
+    if (
+      window.app.model.characterSelected === 'human' ||
+      window.app.model.characterSelected === 'werewolf'
+    ) {
+      const char = window.app.model.characterSelected;
       this.me = new LocalPlayer(
-        this.game, char === 'human' ? 500 : 100, char === 'human' ? 500: 100,
-        'left', char, char === 'human', 'me', 0
+        this.game,
+        char === 'human' ? 500 : 100,
+        char === 'human' ? 500: 100,
+        'left',
+        char,
+        char === 'human',
+        'me',
+        0
       );
 
       if (char === 'human') {
@@ -282,6 +299,9 @@ export default class Play extends window.Phaser.State {
     this.me.changeHuntedStatus();
     if (this.me.type === 'werewolf' && this.me.isHunted) {
       this.generateMeat();
+      this.enemy.humanHunterAnimations();
+    } else if (this.me.type === 'werewolf' && !this.me.isHunted) {
+      this.enemy.humanHuntedAnimations();
     } else if (this.me.type === 'human' && !this.me.isHunted) {
       this.me.humanHunterAnimations();
     } else if (this.me.type === 'human' && this.me.isHunted) {
@@ -291,6 +311,9 @@ export default class Play extends window.Phaser.State {
   }
 
   onPlayerCollision() {
+    const won = !this.me.isHunted;
+    window.app.model.won = won;
+    window.app.model.score = won ? this.score + 100 : this.score;
     this.me.player.destroy();
     this.enemy.player.destroy();
     this.me = null;
