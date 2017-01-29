@@ -19,7 +19,12 @@ module.exports = function(passport){
     passport.use(new GoogleStrategy({
         clientID: configAuth.clientID,
         clientSecret: configAuth.clientSecret,
-        callbackURL: "http://localhost:3000/auth/google/callback"
+
+        // FOR PRODUCTION:
+        // callbackURL: 'http://nullops.org:3000/auth/google/callback'
+        
+        callbackURL: 'http://localhost:3000/auth/google/callback'
+
     }, (accessToken, refreshToken, profile, done) => {
         User.findOne({ google_id: profile.id}, function(err, user){
             if(err){
