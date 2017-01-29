@@ -12,8 +12,6 @@ const routes = require('./routes');
 
 const playerInstance = new players();
 
-// mongoose.connect('mongodb://localhost/hacker-news');
-
 app.use(morgan(':remote-addr - :remote-user [:date[clf]] ":method :url HTTP/:http-version" :status :res[content-length] :response-time ms'));
 
 app.use(bodyParser.urlencoded({extended: true}));
