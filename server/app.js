@@ -91,11 +91,13 @@ io.on('connection', client => {
 
   client.on('eat', function(data) {
     console.log("somthing was eaten", data);
+    playerInstance.updatePlayerScore(data);
     this.broadcast.emit('eat', data);
   });
 
   client.on('forge', function(data) {
     console.log("somthing was forged", data);
+    playerInstance.updatePlayerScore(data);
     this.broadcast.emit('forge', data);
   });
 

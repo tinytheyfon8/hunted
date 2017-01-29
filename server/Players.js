@@ -5,6 +5,15 @@ class Players {
     this.players = [];
   }
 
+  updatePlayerScore(data){
+    for(let i = 0; i < this.players.length; i++) {
+      if(this.players[i].id === data.id) {
+        this.players[i].score = data.score;
+        console.log('........... this players i ...........', this.players[i]);
+      }
+    }
+  }
+
   detectPlayersCollision() {
     let prey;
     let hunter;
@@ -56,11 +65,11 @@ class Players {
   addPlayerAndAssignRole(id) {
     var player;
     if(this.players.length && this.players.length === 1) {
-      player = new Player(500, 500, 'left', 'human', true, id)
+      player = new Player(500, 500, 'left', 'human', true, id, 0)
       this.players.push(player);
       return player;
     } else {
-      player = new Player(100, 100, 'right', 'werewolf', false, id)
+      player = new Player(100, 100, 'right', 'werewolf', false, id, 0)
       this.players.push(player);
       return player;
     }

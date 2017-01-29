@@ -192,7 +192,7 @@ export default class Play extends window.Phaser.State {
       if (this.score % 10 === 0) {
         this.switchRoles();
       }
-      this.socket.emit('eat', { score: this.score });
+      this.socket.emit('eat', { id: this.me.id, score: this.score });
     }
   }
 
@@ -213,7 +213,7 @@ export default class Play extends window.Phaser.State {
       if (this.score % 10 === 0) {
         this.switchRoles();
       }
-      this.socket.emit('forge', { score: this.score });
+      this.socket.emit('forge', { id: this.me.id, score: this.score });
     }
   }
 
@@ -242,7 +242,8 @@ export default class Play extends window.Phaser.State {
       direction: this.me.direction,
       type: this.me.type,
       isHunted: this.me.isHunted,
-      id: this.me.id
+      id: this.me.id,
+      score: 0
     });
   }
 
