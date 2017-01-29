@@ -11,15 +11,15 @@ module.exports = function(playerArr){
     player1_id: player1.id,
     player1_score: player1.score,
     player2_id: player2.id,
-    player2_score: player1.score,
+    player2_score: player2.score,
     date: date
   }).save((err, game) => {
     if(err) {
-      return done(err);
+      console.log(err);
     }
     if(game) {
       console.log('----- game saved! ---- ', game);
-      return done(null, game);
+      return game;
     }
   });
 }

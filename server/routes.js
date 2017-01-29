@@ -18,12 +18,15 @@ routes.get('/games', (req, res) => { //test route to retrieve all game data
 })
 
 routes.get('/auth/google',
-  passport.authenticate('google', { scope: ['https://www.googleapis.com/auth/userinfo.profile']})); //route to obtain google profile data
+  passport.authenticate('google', { scope: ['https://www.googleapis.com/auth/userinfo.email']})); //route to obtain google profile data
+  //'https://www.googleapis.com/auth/userinfo.profile',
 
 routes.get('/auth/google/callback', 
   passport.authenticate('google', { failureRedirect: '/login' }),
   function(req, res) {
+    console.log('req session passport user ------------', req.session.passport.user);
     res.cookie('loggedIn', true);
+    // res.cookie('playerID', req.session.passport.user);
     res.redirect('/');
   });
 

@@ -55,7 +55,7 @@ class Players {
     let player;
 
     player = new Player(
-      data.x, data.y, data.direction, data.type, data.isHunted, data.id
+      data.x, data.y, data.direction, data.type, data.isHunted, data.id, 0
     );
     this.players.push(player);
 
