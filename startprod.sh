@@ -1,3 +1,3 @@
 #!/bin/sh
 
-NODE_ENV=production nodemon server/index.js
+NODE_ENV=production node server/index.js
