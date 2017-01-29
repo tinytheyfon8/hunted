@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router';
+import { isAuth } from '../../helpers';
 import './App.css';
 
 import 'bootstrap/dist/css/bootstrap.min.css';
@@ -21,6 +22,9 @@ export default (props) => (
           <ul className="nav navbar-nav navbar-right">
             <li>
               <Link to="/scores">Scores</Link>
+            </li>
+            <li>
+              { isAuth() ? <a href="/logout">Logout</a> : '' }
             </li>
           </ul>
         </div>
