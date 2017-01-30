@@ -20,7 +20,7 @@ routes.get('/games', (req, res) => { //test route to retrieve all game data
 routes.get('/auth/google',
   passport.authenticate('google', { scope: ['https://www.googleapis.com/auth/userinfo.email']})); //route to obtain google profile data
 
-routes.get('/auth/google/callback', 
+routes.get('/auth/google/callback',
   passport.authenticate('google', { failureRedirect: '/login' }),
   function(req, res) {
     console.log('req session passport user ------------', req.session.passport.user);
