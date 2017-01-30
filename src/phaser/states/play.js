@@ -333,19 +333,19 @@ export default class Play extends window.Phaser.State {
     if(this.me.id === data.id){
       data.score += 100;
       data.won = true;
-      axios.post('/gameover', data)
+      axios.post('/api/gameover', data)
         .then((err, game) => {
           if(err) {
             console.log(err);
           }
         });
     }
-    
+
   }
 
   onLosing(data) {
     if(this.me.id === data.id){
-      axios.post('/gameover', data)
+      axios.post('/api/gameover', data)
         .then((err, game) => {
           if(err) {
             console.log(err);

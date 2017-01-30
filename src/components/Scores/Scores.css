@@ -1,0 +1,10 @@
+.Scores {
+  margin-top: 50px;
+  background-color: #474645;
+  border: 1px solid #302f2e;
+  border-radius: 4px;
+}
+
+td {
+  text-align: left;
+}
