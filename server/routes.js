@@ -5,6 +5,7 @@ const bodyParser = require('body-parser');
 const User = require('./models/User.js');
 const Game = require('./models/Game.js');
 
+//Authentication middleware
 const isLoggedIn = require('./helpers/isLoggedIn');
 
 require('./config/passportConfig.js')(passport);
@@ -18,18 +19,21 @@ module.exports = (playerInstance) => {
     res.json(playerInstance.players);
   });
 
-  routes.get('/api/users', isLoggedIn, (req, res) => { //test route to retrieve all user data
+  //this is a test route to retrieve all user data
+  routes.get('/api/users', isLoggedIn, (req, res) => {
     User.find().exec(function(err, users){
       res.send(users);
     });
   });
 
-  routes.get('/api/games', isLoggedIn, (req, res) => { //test route to retrieve all game data
+  //this is a test route to retrieve all game data
+  routes.get('/api/games', isLoggedIn, (req, res) => {
     Game.find().exec((err, games) => {
       res.send(games);
     });
   });
 
+  //this is a route to display all scores sorted in descending order
   routes.get('/api/scores', isLoggedIn, (req, res) => {
     console.log(req.session.passport.user);
     User.find({ '_id': req.session.passport.user }).exec((err, user) => {
@@ -47,28 +51,31 @@ module.exports = (playerInstance) => {
     });
   });
 
+  //this is a route to obtain google profile data
   routes.get('/auth/google',
-    passport.authenticate('google', { scope: ['https://www.googleapis.com/auth/userinfo.email']})); //route to obtain google profile data
+    passport.authenticate('google', { scope: ['https://www.googleapis.com/auth/userinfo.email']}));
 
+  //After successfully obtaining profile data from Google, create a new session and a cookie which enables user to accesss protected routes
   routes.get('/auth/google/callback',
     passport.authenticate('google', { failureRedirect: '/' }),
     function(req, res) {
-      console.log('req session passport user ------------', req.session.passport.user);
       req.session.user = req.session.passport.user;
       res.cookie('loggedIn', true);
       res.redirect('/');
     });
 
+  //When user tries to logout, use req.session.destroy method to end session and return to the login screen.
   routes.get('/logout', function(req, res) {
-    console.log('req session before destroy', req.session);
     req.session.destroy(function(e){
       req.logout();
-      console.log('wrequed session..... ', req.session);
       res.clearCookie('loggedIn');
       res.redirect('/');
     });
   });
 
+  // After collision has been detected on server, an event is emitted to the clients.
+  // The clients then send a post request with their game data.
+  // When the server recieves post request, it creates a new game instance and saves it to the database.
   routes.post('/api/gameover', isLoggedIn, (req, res) => {
     var date = new Date();
     var playerObj = req.body;
@@ -87,12 +94,12 @@ module.exports = (playerInstance) => {
         console.log(err);
       }
       if(game) {
-        console.log('----- game saved! ---- ', game);
         return game;
       }
     });
   });
 
+  // If we are on the production server, route all the routes (besides API) to the client.
   if (process.env.NODE_ENV === 'production') {
     routes.get('*', (req, res) => {
       res.sendFile(path.resolve(__dirname, '..', 'build', 'index.html'));
@@ -102,5 +109,3 @@ module.exports = (playerInstance) => {
   return routes;
 
 };
-
-// module.exports = routes;
