@@ -28,6 +28,7 @@ mongoose.connect(db.url, function(err){
   }
 });
 
+//Middleware for CORS
 app.use(function(req, res, next) {
   res.header('Access-Control-Allow-Origin', '*');
   res.header('Access-Control-Allow-Methods', '*');
@@ -40,54 +41,66 @@ app.use(function(req, res, next) {
 });
 
 // set up express app to use passport
-require('./config/passportConfig.js')(passport); //does this need to be above the mongodb connection?
-// the above require statement passes in 'passport' for configuration
+// the below require statement passes in 'passport' for configuration
+require('./config/passportConfig.js')(passport);
 app.use(cookieParser());
 app.use(session({ secret: 'howlatthemoon' }));
 app.use(passport.initialize());
 app.use(passport.session());
 
-// set up middleware
+// set up morgan middleware for logging.
 app.use(morgan(':remote-addr - :remote-user [:date[clf]] ":method :url HTTP/:http-version" :status :res[content-length] :response-time ms'));
 
+// set up bodyParser middleware to facilitate interaction with the req.body
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(bodyParser.json());
 
+// if the environment is production, then we set the static path to build directory.
 if (process.env.NODE_ENV === 'production') {
   app.use(express.static(path.resolve(__dirname, '..', 'build')));
 }
 
+//for all endpoints, use the routes.js file
 app.use('/', routes);
 
+//Below are event listeners for socket.io which enables multi-player gaming
+
 io.on('connection', client => {
+  //When a new player connects to the game, we check to see if there are more than two players.
   client.on('new player', function(data) {
+    //If there are more two players already, clear playerInstance.players array in Players.js
+    //Else, emit a 'new enamy' event and send the existing player back to the client that just connected.
     if (playerInstance.players.length >= 2) {
       playerInstance.clearPlayers();
     } else if (playerInstance.players.length === 1) {
       this.emit('new enemy', playerInstance.players[0]);
     }
+    //Create a new Player using the addPlayer method defined in Players.js. Emit this new player back to the client that just connected. Emit 'new enemy' event to the other client.
     let newPlayer = playerInstance.addPlayer(data);
     this.emit('new player added', newPlayer);
     this.broadcast.emit('new enemy', newPlayer);
   });
 
+  //When a client disconnects, use removePlayerById method defined in Players.js to remove from the playerInstance.players array.
   client.on('disconnect', function(data) {
     playerInstance.removePlayerById(this.id);
-    console.log('disconnected');
   });
 
+  // When the werewolf character eats the meat, the score is updated with data from the client.
   client.on('eat', function(data) {
-    console.log("somthing was eaten", data);
     playerInstance.updatePlayerScore(data);
-    this.broadcast.emit('eat', data);
   });
 
+  // When the human character collects the silver, the score is updated with data from the client.
   client.on('forge', function(data) {
-    console.log("somthing was forged", data);
     playerInstance.updatePlayerScore(data);
-    this.broadcast.emit('forge', data);
   });
 
+  // When a character moves, update their player object on the server.
+  // Check for collision
+  // If there is a collision, determine who won and who lost.
+  // Emit winner and loser events to both clients.
+  // Clear players from the playerInstance.players array
   client.on('move', function(data) {
     var moves = data;
     var updatedObj = playerInstance.updatePlayers(moves);
@@ -103,9 +116,9 @@ io.on('connection', client => {
     }
   });
 
-  client.on('switch', function(){
+  // Whenever player collects enough items (meat or silver) switch hunter and prey roles.
+  client.on('switch', function() {
     playerInstance.reverseIsHunted();
-    console.log('player array after switch.....', playerInstance.players);
     this.emit('switch');
     this.broadcast.emit('switch');
   })

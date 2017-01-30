@@ -9,7 +9,6 @@ class Players {
     for(let i = 0; i < this.players.length; i++) {
       if(this.players[i].id === data.id) {
         this.players[i].score = data.score;
-        console.log('........... this players i ...........', this.players[i]);
       }
     }
   }
