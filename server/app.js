@@ -5,7 +5,6 @@ const morgan = require('morgan');
 const bodyParser = require('body-parser');
 const path = require('path');
 const players = require('./Players');
-const routes = require('./routes');
 const cookieParser = require('cookie-parser');
 const passport = require('passport');
 
@@ -16,6 +15,8 @@ const session = require('express-session');
 const server = require('http').createServer(app);
 const io = require('socket.io')(server);
 const playerInstance = new players();
+const routes = require('./routes')(playerInstance);
+
 var playerID;
 
 // connect to mongoDB
@@ -56,35 +57,7 @@ if (process.env.NODE_ENV === 'production') {
   app.use(express.static(path.resolve(__dirname, '..', 'build')));
 }
 
-app.get('/api/players/:isNewPlayer', (req, res) => {
-  if (req.params.isNewPlayer === 'true' && playerInstance.players.length >= 2) {
-    playerInstance.clearPlayers();
-  }
-  res.json(playerInstance.players);
-});
-
-// app.use((req, res, next) => { //attempt to set up middleware to get playerID from req.session
-//   if(req.session) {
-//     console.log('middleware started..', req.session);
-//     if(req.session.passport){
-//       playerID = req.session.passport.user;
-//       console.log('playerID in middleware', playerID, req.session.passport.user);
-//       playerInstance.players[playerInstance.players.length-1].playerID = playerID;
-//       console.log('players w/ id', playerInstance.players);
-//     }
-//   }
-//   next();
-// });
-
 app.use('/', routes);
-
-// Catch everything that isn't in routes and send
-// to client so react-router can handle it
-if (process.env.NODE_ENV === 'production') {
-  app.get('*', (req, res) => {
-    res.sendFile(path.resolve(__dirname, '..', 'build', 'index.html'));
-  });
-}
 
 io.on('connection', client => {
   client.on('new player', function(data) {
