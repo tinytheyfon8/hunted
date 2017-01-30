@@ -11,26 +11,26 @@ require('./config/passportConfig.js')(passport);
 
 module.exports = (playerInstance) => {
 
-  routes.get('/api/players/:isNewPlayer', (req, res) => {
+  routes.get('/api/players/:isNewPlayer', isLoggedIn, (req, res) => {
     if (req.params.isNewPlayer === 'true' && playerInstance.players.length >= 2) {
       playerInstance.clearPlayers();
     }
     res.json(playerInstance.players);
   });
 
-  routes.get('/api/users', (req, res) => { //test route to retrieve all user data
+  routes.get('/api/users', isLoggedIn, (req, res) => { //test route to retrieve all user data
     User.find().exec(function(err, users){
       res.send(users);
     });
   });
 
-  routes.get('/api/games', (req, res) => { //test route to retrieve all game data
+  routes.get('/api/games', isLoggedIn, (req, res) => { //test route to retrieve all game data
     Game.find().exec((err, games) => {
       res.send(games);
     });
   });
 
-  routes.get('/api/scores', (req, res) => {
+  routes.get('/api/scores', isLoggedIn, (req, res) => {
     console.log(req.session.passport.user);
     User.find({ '_id': req.session.passport.user }).exec((err, user) => {
       const { name, email } = user[0];
@@ -69,7 +69,7 @@ module.exports = (playerInstance) => {
     });
   });
 
-  routes.post('/api/gameover', (req, res) => {
+  routes.post('/api/gameover', isLoggedIn, (req, res) => {
     var date = new Date();
     var playerObj = req.body;
     var playerID;

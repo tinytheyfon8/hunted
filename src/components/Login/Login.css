@@ -1,8 +1,9 @@
 .well{
   margin: 75px;
+  margin-top: 50px;
   text-align: center;
   /*vertical-align: middle;*/
-  padding-top: 100px;
+  padding-top: 50px;
   padding-bottom: 100px;
   background-color: #474645;
   border: 1px solid #302f2e;
@@ -17,4 +18,3 @@
   max-width: 20%;
   max-height: 20%;
 }
-
