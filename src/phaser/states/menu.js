@@ -17,6 +17,7 @@ export default class Menu extends window.Phaser.State {
 
     this.keyboard = this.game.input.keyboard;
 
+    //This allows user to make selections using arrow keys
     this.controls = this.keyboard.addKeys({
       up: window.Phaser.Keyboard.UP,
       down: window.Phaser.Keyboard.DOWN,
@@ -40,6 +41,7 @@ export default class Menu extends window.Phaser.State {
         continue;
       }
 
+      //places menu item on the correct x and y coordinates.
       menuItem = new MenuItem(this.game, 20, (((i + 1) * 40) + 40), option.text, option.targetState);
 
       this.menuItems.push(menuItem);
@@ -52,6 +54,7 @@ export default class Menu extends window.Phaser.State {
     this.controls.down.onDown.add(this.selectItem, this, 0, 1);
   }
 
+  //This highligts selected item in menu upon selection from arrow keys
   selectItem(key, delta) {
     this.menuItems[this.focused].focus(false);
 
@@ -66,6 +69,7 @@ export default class Menu extends window.Phaser.State {
     this.menuItems[this.focused].focus(true);
   }
 
+  //activates targetState in options array once spacebar is pressed.
   activateFocusedItem() {
     this.menuItems[this.focused].navigate();
   }
