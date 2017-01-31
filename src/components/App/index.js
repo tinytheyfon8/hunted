@@ -5,6 +5,8 @@ import './App.css';
 
 import 'bootstrap/dist/css/bootstrap.min.css';
 
+// App component. React router child routes render at props.children.
+// Show logout link only if user is logged in.
 export default (props) => (
   <div className="App">
     <nav className="navbar navbar-inverse">

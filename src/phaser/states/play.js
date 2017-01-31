@@ -12,7 +12,11 @@ import silver from '../assets/images/silver.png';
 import werewolf from '../assets/images/werewolf.png';
 import human from '../assets/images/human.png';
 
+// Play class is the Play state for phaser.
+// This is where the actual game play occurs.
 export default class Play extends window.Phaser.State {
+
+  // set up initial values for class properties
   constructor() {
     super();
 
@@ -34,41 +38,69 @@ export default class Play extends window.Phaser.State {
     this.socket = null;
   }
 
+  // preload is a method used by Phaser states.
+  // It preloads all the Phaser assets for that state.
+  // In this case, we are loading the background image
+  // and sprites that will be used for the game.
   preload() {
     this.game.load.image('land', land);
-    this.game.load.spritesheet('werewolf', werewolf, 46, 46); //46 by 46 is the perfect size
-    this.game.load.spritesheet('meat', meat, 16, 17); //load meat sprite
-    this.game.load.spritesheet('silver', silver, 37, 35); //load silver sprite
+    this.game.load.spritesheet('werewolf', werewolf, 46, 46); // 46x46 is perfect
+    this.game.load.spritesheet('meat', meat, 16, 17); // load meat sprite
+    this.game.load.spritesheet('silver', silver, 37, 35); // load silver sprite
     this.game.load.spritesheet('human', human, 29, 31);
   }
 
+  // create is also a method used by Phaser states.
+  // It creates the game state. Here we actually create the
+  // resources that we loaded in preload.
   create() {
+    // set the world bounds (startx, starty, endx, endy)
     this.game.world.setBounds(0, 0, 1200, 600);
 
+    // show the image 'land' as the background accross field
     this.land = this.game.add.tileSprite(0, 0, 1200, 600, 'land');
 
+    // create an input controller to listen for keydown events
     this.cursors = this.game.input.keyboard.createCursorKeys();
 
+    // initiate socket connection
     this.socket = io.connect();
 
-    this.textStyleKey = { font: 'bold 14px sans-serif', fill: '#46c0f9', align: 'center' };
-    this.textStyleValue = { font: 'bold 18px sans-serif', fill: '#fff', align: 'center' };
+    // styles used for score and score text
+    this.textStyleKey = {
+      font: 'bold 14px sans-serif',
+      fill: '#46c0f9',
+      align: 'center'
+    };
+    this.textStyleValue = {
+      font: 'bold 18px sans-serif',
+      fill: '#fff',
+      align: 'center'
+    };
 
-    // Score.
+    // Score and score text
     this.game.add.text(30, 20, 'SCORE', this.textStyleKey);
-    this.scoreTextValue = this.game.add.text(90, 18, this.score.toString(), this.textStyleValue);
+    this.scoreTextValue = this.game.add.text(
+      90, 18, this.score.toString(), this.textStyleValue
+    );
 
+    // create the local player model and sprite
     this.addLocalPlayer();
 
+    // set the socket event handlers
     this.setEventHandlers();
 
+    // send the socket event 'disconnect' on reload
     window.addEventListener("beforeunload", () => {
       this.socket.emit('disconnect');
     });
   }
 
+  // update is a method that every Phaser play state has.
+  // It is called about 60 times per second by phaser.
   update() {
     if (this.me) {
+      // set speed if one of the arrow keys is down
       if (
         this.cursors.right.isDown || this.cursors.left.isDown ||
         this.cursors.up.isDown || this.cursors.down.isDown
@@ -78,6 +110,7 @@ export default class Play extends window.Phaser.State {
         this.speed = 0;
       }
 
+      // set direction based on what keys are down
       if (this.cursors.right.isDown && this.cursors.up.isDown) {
         this.newDirection = 'up-right';
       } else if (this.cursors.right.isDown && this.cursors.down.isDown) {
@@ -96,6 +129,12 @@ export default class Play extends window.Phaser.State {
         this.newDirection = 'down';
       }
 
+      // With this.updateDelay incrementing every time
+      // update is called, the if statement below is only
+      // true once every ten times. It is on these times
+      // we move the local player if one of the arrow keys
+      // is depressed. If we did not restrict this to every
+      // ten times the player would move very fast.
       this.updateDelay++;
 
       if (this.updateDelay % (8 - this.speed) === 0) {
@@ -119,35 +158,30 @@ export default class Play extends window.Phaser.State {
           Object.keys(this.silverObj).forEach(j => {
             this.silverCollision(this.silverObj[j], j);
           });
-          this.socket.emit(
-            'move',
-            {
-              x: this.me.player.x,
-              y: this.me.player.y,
-              direction: this.me.direction,
-              id: this.me.id
-            }
-          );
+
+          // this.socket.emit(
+          //   'move',
+          //   {
+          //     x: this.me.player.x,
+          //     y: this.me.player.y,
+          //     direction: this.me.direction,
+          //     id: this.me.id
+          //   }
+          // );
         } else {
           this.me.showStopAnimations(this.direction);
         }
 
-        // this.socket.emit('move', { x: this.me.player.x, y: this.me.player.y, direction: this.me.direction, id: this.me.id } );
+        // send move event to server
+        this.socket.emit('move', { x: this.me.player.x, y: this.me.player.y, direction: this.me.direction, id: this.me.id } );
       }
     }
   }
 
+  // add the local player object and sprite
   addLocalPlayer() {
-    // if (
-    //   !this.getPlayerById(this.socket.id) &&
-    //   (window.app.model.characterSelected === 'human' ||
-    //   window.app.model.characterSelected === 'werewolf')
-    // ) {
-    if (
-      window.app.model.characterSelected === 'human' ||
-      window.app.model.characterSelected === 'werewolf'
-    ) {
-      const char = window.app.model.characterSelected;
+    const char = window.app.model.characterSelected;
+    if (char) {
       this.me = new LocalPlayer(
         this.game,
         char === 'human' ? 500 : 100,
@@ -193,6 +227,10 @@ export default class Play extends window.Phaser.State {
     }
   }
 
+  // If meat collision happens remove meat and increase score
+  // If score is divisible by 10, then the last piece was just
+  // picked up. Call switch roles method in this case.
+  // Finally emit eat socket event to server.
   meatCollision(food, i) {
     if (
       this.me.player.x >= food.x - 25 &&
@@ -214,6 +252,10 @@ export default class Play extends window.Phaser.State {
     }
   }
 
+  // If silver collision happens remove silver and increase score.
+  // If score is divisible by 10, then the last piece was just
+  // picked up. Call switch roles method in this case.
+  // Finally emit forge socket event to server.
   silverCollision(silver, i) {
     if (
       this.me.player.x >= silver.x - 25 &&
@@ -239,6 +281,7 @@ export default class Play extends window.Phaser.State {
     this.socket.emit('switch');
   }
 
+  // websocket event handlers
   setEventHandlers() {
     this.socket.on('new player added', this.onNewPlayerAdded.bind(this));
     this.socket.on('new enemy', this.onNewEnemyPlayer.bind(this));
@@ -295,6 +338,8 @@ export default class Play extends window.Phaser.State {
     this.enemy.update(data.x, data.y, data.direction);
   }
 
+  // change hunted status for local player
+  // do proper animations for each player
   onRoleSwitch() {
     this.me.changeHuntedStatus();
     if (this.me.type === 'werewolf' && this.me.isHunted) {
@@ -310,6 +355,8 @@ export default class Play extends window.Phaser.State {
     }
   }
 
+  // figure out who won and increase score if local player won
+  // remove sprites and zero out game properties. Start game over state.
   onPlayerCollision() {
     const won = !this.me.isHunted;
     window.app.model.won = won;

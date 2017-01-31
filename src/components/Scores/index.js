@@ -4,6 +4,7 @@ import axios from 'axios';
 import './Scores.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
+// Scores component displays scores for user that is logged in.
 export default class Scores extends Component {
   constructor(props) {
     super(props);
@@ -13,6 +14,7 @@ export default class Scores extends Component {
     };
   }
 
+  // ajax request to get scores and set to this.state.scores
   componentDidMount() {
     axios.get('/api/scores')
       .then(res => {
