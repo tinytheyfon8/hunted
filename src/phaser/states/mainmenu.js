@@ -1,5 +1,7 @@
 import Menu from './menu';
 
+// Creates options menu after logging in
+// targetState indicates the state that will be initiated upon pressing spacebar
 const options = [{
   text: 'New game',
   targetState: 'NewGameMenu'
@@ -7,6 +9,7 @@ const options = [{
   text: 'Instructions',
   targetState: 'InstructionMenu'
 }];
+
 
 export default class MainMenu extends Menu {
   constructor() {

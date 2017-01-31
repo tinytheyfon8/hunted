@@ -13,6 +13,8 @@ export default class MainMenu extends Menu {
   create() {
     this.menuSetup();
     this.generateMenu();
+    //this adds text beneath the back selection in the InstructionMenu state.
+    //area is finite. Make sure code doesnt run off page.
     this.game.add.text(20, 120,
       `* HOW TO PLAY *
       Use arrow keys to control the movement of your character.
