@@ -5,6 +5,8 @@ import './App.css';
 
 import 'bootstrap/dist/css/bootstrap.min.css';
 
+// App component. React router child routes render at props.children.
+// Show logout link only if user is logged in.
 export default (props) => (
   <div className="App">
     <nav className="navbar navbar-inverse">
@@ -16,7 +18,7 @@ export default (props) => (
             <span className="icon-bar"></span>
             <span className="icon-bar"></span>
           </button>
-          <Link to="/" className="navbar-brand">Hunted</Link>
+          <Link to="/" className="navbar-brand title">HUNTED</Link>
         </div>
         <div className="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
           <ul className="nav navbar-nav navbar-right">
