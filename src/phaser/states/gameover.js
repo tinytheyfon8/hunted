@@ -21,6 +21,8 @@ export default class GameOver extends window.Phaser.State {
       ? `YOU WON!  FINAL SCORE: ${window.app.model.score}`
       : 'YOU SUCK';
 
+    // music.play();  
+
     imageBtn.anchor.set(0.5);
 
     // And then we render that text from above (depebding on whether player won or lost) using the add method.
