@@ -103,6 +103,7 @@ io.on('connection', client => {
   // Clear players from the playerInstance.players array
   client.on('move', function(data) {
     var moves = data;
+    console.log('data: ', data);
     var updatedObj = playerInstance.updatePlayers(moves);
     var killed = playerInstance.detectPlayersCollision();
     this.broadcast.emit('move', updatedObj);
