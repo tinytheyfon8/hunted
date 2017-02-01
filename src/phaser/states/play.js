@@ -11,6 +11,7 @@ import meat from '../assets/images/food.png';
 import silver from '../assets/images/silver.png';
 import werewolf from '../assets/images/werewolf.png';
 import human from '../assets/images/human.png';
+import walls from '../assets/images/walls.png'
 
 // Play class is the Play state for phaser.
 // This is where the actual game play occurs.
@@ -48,6 +49,7 @@ export default class Play extends window.Phaser.State {
     this.game.load.spritesheet('meat', meat, 16, 17); // load meat sprite
     this.game.load.spritesheet('silver', silver, 37, 35); // load silver sprite
     this.game.load.spritesheet('human', human, 29, 31);
+    this.game.load.spritesheet('walls', walls, 30, 40);
   }
 
   // create is also a method used by Phaser states.
@@ -227,6 +229,14 @@ export default class Play extends window.Phaser.State {
     }
   }
 
+  generateWall() {
+    for(let i = 0; i < 10; i++){
+      const wall = this.game.add.sprite(this.getRandomX, this.getRandomY(), 'wall');
+      wall.frame = 10;
+
+      this.wallObj[i] = wall;
+    }
+  }
   // If meat collision happens remove meat and increase score
   // If score is divisible by 10, then the last piece was just
   // picked up. Call switch roles method in this case.
