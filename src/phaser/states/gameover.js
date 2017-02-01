@@ -1,18 +1,21 @@
 // Game over state
 
 import einstein from '../assets/images/einstein.png';
+// import gameover from '../assets/audio/FILLMEIN.mp3';
 
 export default class GameOver extends window.Phaser.State {
 
   // Before the GameOver state displays, the einstein image is loaded.
   preload() {
     this.game.load.image('einstein', einstein);
+
+    // this.load.audio('gameover', gameover)
   }
 
   // By setting up global variables in the create method, we initialize them when the GameOver state starts
   create() {
     const imageBtn = this.game.add.button(this.game.world.centerX, this.game.world.centerY, 'einstein', this.startGame, this);
-
+    // const music = this.game.add.audio('gameover')
     // Using the won property of the window object, we display a win message or a lose message.
     const display = window.app.model.won
       ? `YOU WON!  FINAL SCORE: ${window.app.model.score}`
