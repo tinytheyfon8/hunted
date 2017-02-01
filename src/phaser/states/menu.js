@@ -1,4 +1,5 @@
 import MenuItem from '../text/menuitem';
+import intromusic from '../assets/audio/8bitGeralt.wav';
 
 export default class Menu extends window.Phaser.State {
   constructor(options, title) {
@@ -7,9 +8,15 @@ export default class Menu extends window.Phaser.State {
     this.title = title;
   }
 
+  preload() {
+    this.game.load.audio('intromusic', intromusic);
+  }
+
   create() {
     this.menuSetup();
     this.generateMenu();
+    const music = this.game.add.audio('intromusic')
+    music.play();
   }
 
   menuSetup() {
