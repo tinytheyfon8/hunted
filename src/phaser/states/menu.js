@@ -79,6 +79,5 @@ export default class Menu extends window.Phaser.State {
   //activates targetState in options array once spacebar is pressed.
   activateFocusedItem() {
     this.menuItems[this.focused].navigate();
-    music.stop();
   }
 }
