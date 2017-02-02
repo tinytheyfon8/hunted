@@ -24,6 +24,7 @@ export default class Play extends window.Phaser.State {
     this.me = null;
     this.enemy = null;
     this.land = null;
+    this.walls = null;
     this.meatObj = {};
     this.silverObj = {};
     this.squareSize = 15;
@@ -45,11 +46,11 @@ export default class Play extends window.Phaser.State {
   // and sprites that will be used for the game.
   preload() {
     this.game.load.image('land', land);
+    this.game.load.image('walls', walls); //load walls
     this.game.load.spritesheet('werewolf', werewolf, 46, 46); // 46x46 is perfect
     this.game.load.spritesheet('meat', meat, 16, 17); // load meat sprite
     this.game.load.spritesheet('silver', silver, 37, 35); // load silver sprite
     this.game.load.spritesheet('human', human, 29, 31);
-    this.game.load.spritesheet('walls', walls, 30, 40);
   }
 
   // create is also a method used by Phaser states.
@@ -60,7 +61,10 @@ export default class Play extends window.Phaser.State {
     this.game.world.setBounds(0, 0, 1200, 600);
 
     // show the image 'land' as the background accross field
-    this.land = this.game.add.tileSprite(0, 0, 1200, 600, 'land');
+   this.land = this.game.add.tileSprite(0, 0, 1200, 600, 'land');
+
+    this.walls = this.game.add.tileSprite(0, 0, 50, 100, 'walls');
+    // console.log('these are walls:', this.walls);
 
     // create an input controller to listen for keydown events
     this.cursors = this.game.input.keyboard.createCursorKeys();
@@ -91,6 +95,9 @@ export default class Play extends window.Phaser.State {
 
     // set the socket event handlers
     this.setEventHandlers();
+
+    // create the wall 
+    this.generateWall();
 
     // send the socket event 'disconnect' on reload
     window.addEventListener("beforeunload", () => {
@@ -229,14 +236,13 @@ export default class Play extends window.Phaser.State {
     }
   }
 
-  generateWall() {
-    for(let i = 0; i < 10; i++){
-      const wall = this.game.add.sprite(this.getRandomX, this.getRandomY(), 'wall');
-      wall.frame = 10;
+  // generateWall() {
+  //   for(let i = 0; i < 10; i++){
+  //     const wall = this.game.add.sprite(this.getRandomX, this.getRandomY(), 'wall');
 
-      this.wallObj[i] = wall;
-    }
-  }
+  //     this.wallObj[i] = wall;
+  //   }
+  // }
   // If meat collision happens remove meat and increase score
   // If score is divisible by 10, then the last piece was just
   // picked up. Call switch roles method in this case.
