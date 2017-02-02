@@ -27,7 +27,7 @@ module.exports = function(passport){
         // FOR PRODUCTION:
         // callbackURL: 'http://nullops.org:3000/auth/google/callback'
 
-        callbackURL: 'http://hunted.tenoutoftintravels.com:3000/auth/google/callback'
+        callbackURL: 'http://localhost:3000/auth/google/callback'
 
     }, (accessToken, refreshToken, profile, done) => {
         //Query the database to see if the user exists.
