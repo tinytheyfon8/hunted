@@ -5,6 +5,7 @@ import axios from 'axios';
 
 import EnemyPlayer from '../EnemyPlayer';
 import LocalPlayer from '../LocalPlayer';
+import Phaser from '../../../public/phaser.min.js';
 
 import land from '../assets/images/earth.png';
 import meat from '../assets/images/food.png';
@@ -56,15 +57,18 @@ export default class Play extends window.Phaser.State {
   // create is also a method used by Phaser states.
   // It creates the game state. Here we actually create the
   // resources that we loaded in preload.
+
   create() {
+    var randomX = Math.floor(Math.random() * 80) * this.squareSize;
+    var randomY = Math.floor(Math.random() * 40) * this.squareSize;
+
+    this.game.physics.startSystem(Phaser.Physics.ARCADE);
     // set the world bounds (startx, starty, endx, endy)
     this.game.world.setBounds(0, 0, 1200, 600);
 
     // show the image 'land' as the background accross field
-   this.land = this.game.add.tileSprite(0, 0, 1200, 600, 'land');
-
-    this.walls = this.game.add.tileSprite(0, 0, 50, 100, 'walls');
-    // console.log('these are walls:', this.walls);
+    this.land = this.game.add.tileSprite(0, 0, 1200, 600, 'land');
+    this.wall = this.game.add.sprite(randomX, randomY,'walls');
 
     // create an input controller to listen for keydown events
     this.cursors = this.game.input.keyboard.createCursorKeys();
@@ -97,7 +101,7 @@ export default class Play extends window.Phaser.State {
     this.setEventHandlers();
 
     // create the wall 
-    this.generateWall();
+    //this.generateWall();
 
     // send the socket event 'disconnect' on reload
     window.addEventListener("beforeunload", () => {
@@ -108,6 +112,9 @@ export default class Play extends window.Phaser.State {
   // update is a method that every Phaser play state has.
   // It is called about 60 times per second by phaser.
   update() {
+
+    this.game.physics.arcade.collide(this.me, this.walls);
+    
     if (this.me) {
       // set speed if one of the arrow keys is down
       if (
