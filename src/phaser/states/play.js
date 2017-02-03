@@ -273,6 +273,7 @@ export default class Play extends window.Phaser.State {
       }
 
       // set speed if one of the xbox gamepad dpad/sticks are pressed
+      if(this.pad1.connected){
 
       if (
         this.pad1.axis(Phaser.Gamepad.XBOX360_STICK_LEFT_X) < -0.1 || this.pad1.axis(Phaser.Gamepad.XBOX360_STICK_LEFT_X) > 0.1 ||
@@ -302,6 +303,7 @@ export default class Play extends window.Phaser.State {
         this.newDirection = 'down';
       }
 
+    }
       // With this.updateDelay incrementing every time
       // update is called, the if statement below is only
       // true once every ten times. It is on these times

@@ -6,7 +6,7 @@ export default class Menu extends window.Phaser.State {
     super();
     this.options = options;
     this.title = title;
-    this.introMusic
+    this.introMusic;
   }
 
   preload() {
