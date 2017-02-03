@@ -16,8 +16,9 @@ import human from '../assets/images/human.png';
 // Importing Audio Assets
 import humanAnvil from '../assets/audio/anvil.wav';
 import wolfChomp from '../assets/audio/chomp.mp3';
-import humanBlade from '../assets/audio/blade.ogg';
+import humanBlade from '../assets/audio/blade.mp3';
 import wolfHowl from '../assets/audio/howl.mp3';
+import soundTrack from '../assets/audio/hauntedhouse.mp3';
 
 // Play class is the Play state for phaser.
 // This is where the actual game play occurs.
@@ -47,6 +48,7 @@ export default class Play extends window.Phaser.State {
     this.wolfChompSfx = null;
     this.wolfHowlSfx = null;
     this.humanBladeSfx = null;
+    this.soundTrack = null;
   }
 
   // preload is a method used by Phaser states.
@@ -64,6 +66,7 @@ export default class Play extends window.Phaser.State {
     this.game.load.audio('wolfChomp', wolfChomp);
     this.game.load.audio('wolfHowl', wolfHowl);
     this.game.load.audio('humanBlade', humanBlade);
+    this.game.load.audio('soundTrack', soundTrack);
 
   }
 
@@ -100,7 +103,9 @@ export default class Play extends window.Phaser.State {
     this.humanAnvilSfx = this.game.add.audio('humanAnvil');
     this.wolfChompSfx = this.game.add.audio('wolfChomp');
     this.wolfHowlSfx = this.game.add.audio('wolfHowl');
-    this.humanBladeSfx = this.game.add.audio('wolfChomp');
+    this.humanBladeSfx = this.game.add.audio('humanBlade');
+    this.soundTrack = this.game.add.audio('soundTrack')
+    this.soundTrack.play();
 
 
     // Score and score text
@@ -118,6 +123,8 @@ export default class Play extends window.Phaser.State {
     // send the socket event 'disconnect' on reload
     window.addEventListener("beforeunload", () => {
       this.socket.emit('disconnect');
+
+    //start the soundtrack  
     });
   }
 
@@ -269,11 +276,13 @@ export default class Play extends window.Phaser.State {
       delete this.meatObj[i];
       food.destroy();
       this.score++;
-      this.wolfChompSfx.play(); //FIX IF HUMAN HEARS THIS
+      // this.wolfChompSfx.play(); //FIX IF HUMAN HEARS THIS
       this.scoreTextValue.text = this.score.toString();
-      if (this.score % 10 === 0) {
+      if (this.score % 10 === 0 && this.score !== 0) {
         this.wolfHowlSfx.play();
         this.switchRoles();
+      } else if (this.score !== 10 || this.score !== 0) {
+        this.wolfChompSfx.play();
       }
       this.socket.emit('eat', { id: this.me.id, score: this.score });
     }
@@ -296,14 +305,14 @@ export default class Play extends window.Phaser.State {
       delete this.silverObj[i];
       silver.destroy();
       this.score++;
-      this.humanAnvilSfx.play(); //FIX IF WEREWOLF HEARS
+      this.humanAnvilSfx.play();
       this.scoreTextValue.text = this.score.toString();
-      if (this.score % 10 === 0) {
+      if (this.score % 10 === 0 && this.score !== 0) {
         this.humanBladeSfx.play();
         this.switchRoles();
-      } else {
+      } else if (this.score % 10 >= 1 || this.score !== 0) {
         this.humanAnvilSfx.play();
-      }
+      } 
       this.socket.emit('forge', { id: this.me.id, score: this.score });
     }
   }
@@ -399,6 +408,7 @@ export default class Play extends window.Phaser.State {
     this.score = 0;
     this.meatObj = {};
     this.silverObj = {};
+    this.soundTrack.stop();
     this.game.world.removeAll();
     this.game.state.start('GameOver');
   }

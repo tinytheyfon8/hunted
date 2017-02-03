@@ -6,6 +6,7 @@ export default class Menu extends window.Phaser.State {
     super();
     this.options = options;
     this.title = title;
+    this.introMusic
   }
 
   preload() {
@@ -15,8 +16,8 @@ export default class Menu extends window.Phaser.State {
   create() {
     this.menuSetup();
     this.generateMenu();
-    const music = this.game.add.audio('intromusic')
-    music.play();
+    this.introMusic = this.game.add.audio('intromusic')
+    this.introMusic.play();
   }
 
   menuSetup() {
@@ -79,5 +80,6 @@ export default class Menu extends window.Phaser.State {
   //activates targetState in options array once spacebar is pressed.
   activateFocusedItem() {
     this.menuItems[this.focused].navigate();
+    this.introMusic.stop();
   }
 }
