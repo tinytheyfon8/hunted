@@ -5,6 +5,7 @@ import axios from 'axios';
 
 import EnemyPlayer from '../EnemyPlayer';
 import LocalPlayer from '../LocalPlayer';
+import Phaser from '../../../public/phaser.min.js';
 
 // Importing Visual Assets
 import land from '../assets/images/earth.png';
@@ -12,6 +13,7 @@ import meat from '../assets/images/food.png';
 import silver from '../assets/images/silver.png';
 import werewolf from '../assets/images/werewolf.png';
 import human from '../assets/images/human.png';
+import walls from '../assets/images/walls.png'
 
 // Importing Audio Assets
 import humanAnvil from '../assets/audio/anvil.wav';
@@ -23,7 +25,7 @@ import soundTrack from '../assets/audio/hauntedhouse.mp3';
 // Play class is the Play state for phaser.
 // This is where the actual game play occurs.
 export default class Play extends window.Phaser.State {
-
+ console.log('hello'); 
   // set up initial values for class properties
   constructor() {
     super();
@@ -33,6 +35,7 @@ export default class Play extends window.Phaser.State {
     this.land = null;
     this.meatObj = {};
     this.silverObj = {};
+    this.wallObj = {};
     this.squareSize = 15;
     this.score = 0;
     this.speed = 0;
@@ -57,6 +60,7 @@ export default class Play extends window.Phaser.State {
   // and sprites that will be used for the game.
   preload() {
     this.game.load.image('land', land);
+    this.game.load.image('walls', walls, 20, 20); //load walls
     this.game.load.spritesheet('werewolf', werewolf, 46, 46); // 46x46 is perfect
     this.game.load.spritesheet('meat', meat, 16, 17); // load meat sprite
     this.game.load.spritesheet('silver', silver, 37, 35); // load silver sprite
@@ -73,13 +77,18 @@ export default class Play extends window.Phaser.State {
   // create is also a method used by Phaser states.
   // It creates the game state. Here we actually create the
   // resources that we loaded in preload.
+
   create() {
+
+    this.game.physics.startSystem(Phaser.Physics.ARCADE);
 
     // set the world bounds (startx, starty, endx, endy)
     this.game.world.setBounds(0, 0, 1200, 600);
 
     // show the image 'land' as the background accross field
     this.land = this.game.add.tileSprite(0, 0, 1200, 600, 'land');
+
+    //this.wall = this.game.add.sprite(randomX, randomY, 'walls');
 
     // create an input controller to listen for keydown events
     this.cursors = this.game.input.keyboard.createCursorKeys();
@@ -120,6 +129,9 @@ export default class Play extends window.Phaser.State {
     // set the socket event handlers
     this.setEventHandlers();
 
+    // create the walls 
+    this.generateWall();
+
     // send the socket event 'disconnect' on reload
     window.addEventListener("beforeunload", () => {
       this.socket.emit('disconnect');
@@ -131,6 +143,9 @@ export default class Play extends window.Phaser.State {
   // update is a method that every Phaser play state has.
   // It is called about 60 times per second by phaser.
   update() {
+    // this.game.physics.arcade.collide(this.silver, this.wall);
+    // this.game.physics.arcade.collide(this.me.player, this.wall);
+    
     if (this.me) {
       // set speed if one of the arrow keys is down
       if (
@@ -191,6 +206,10 @@ export default class Play extends window.Phaser.State {
             this.silverCollision(this.silverObj[j], j);
           });
 
+          Object.keys(this.wallObj).forEach(k => {
+            this.wallCollision(this.wallObj[k], k);
+          })
+
           // this.socket.emit(
           //   'move',
           //   {
@@ -238,7 +257,26 @@ export default class Play extends window.Phaser.State {
 
   getRandomY() {
     const randomY = Math.floor(Math.random() * 40) * this.squareSize;
-    return randomY >= 540 ? randomY - 60 : randomY <= 60 ? randomY + 60 : randomY;
+    return randomY >= 440 ? randomY - 60 : randomY <= 60 ? randomY + 60 : randomY;
+  }
+
+  getRandomTreeX() {
+    const randomX = Math.floor(Math.random() * 80) * this.squareSize;
+    return randomX >= 1140 ? randomX - 60 : randomX <= 60 ? randomX + 60 : randomX;
+  }
+
+  getRandomTreeY() {
+    const randomY = Math.floor(Math.random() * 40) * this.squareSize;
+    return randomY >= 440 ? randomY - 60 : randomY <= 60 ? randomY + 60 : randomY;
+  }
+
+
+  generateWall() {
+    for(let i = 0; i < 9; i++){
+      const wall = this.game.add.sprite(this.getRandomTreeX(), this.getRandomTreeY(), 'walls');
+
+      this.wallObj[i] = wall;
+    }
   }
 
   generateSilver() {
@@ -259,6 +297,7 @@ export default class Play extends window.Phaser.State {
     }
   }
 
+  
   // If meat collision happens remove meat and increase score
   // If score is divisible by 10, then the last piece was just
   // picked up. Call switch roles method in this case.
@@ -317,6 +356,24 @@ export default class Play extends window.Phaser.State {
     }
   }
 
+
+  wallCollision(wall, i) {
+      if (
+        this.me.player.x >= wall.x - 25 &&
+        this.me.player.x <= wall.x + 25 &&
+        this.me.player.y >= wall.y - 25 &&
+        this.me.player.y <= wall.y + 25
+      ) {
+        // because the x, y coordinates of the wall and
+        // player never line up perfectly, give a range
+        // of overlapping variables
+        // this.score++;
+        // this.scoreTextValue.text = this.score.toString();
+      }  
+       this.socket.emit('bounce');
+      }
+
+
   switchRoles() {
     this.socket.emit('switch');
   }
@@ -327,6 +384,7 @@ export default class Play extends window.Phaser.State {
     this.socket.on('new enemy', this.onNewEnemyPlayer.bind(this));
     this.socket.on('connect', this.onSocketConnected.bind(this));
     this.socket.on('eat', this.onMeatEat.bind(this));
+    this.socket.on('bounce', this.onWallBounce.bind(this));
     this.socket.on('forge', this.onCollectSilver.bind(this));
     this.socket.on('move', this.onPlayerMovement.bind(this));
     this.socket.on('switch', this.onRoleSwitch.bind(this));
@@ -372,6 +430,10 @@ export default class Play extends window.Phaser.State {
 
   onCollectSilver(data) {
     console.log('other player collected silver for weapon', data);
+  }
+
+  onWallBounce(){
+    console.log('You hit the wall');
   }
 
   onPlayerMovement(data) {
