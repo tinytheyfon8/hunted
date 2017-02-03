@@ -6,11 +6,19 @@ import axios from 'axios';
 import EnemyPlayer from '../EnemyPlayer';
 import LocalPlayer from '../LocalPlayer';
 
+// Importing Visual Assets
 import land from '../assets/images/earth.png';
 import meat from '../assets/images/food.png';
 import silver from '../assets/images/silver.png';
 import werewolf from '../assets/images/werewolf.png';
 import human from '../assets/images/human.png';
+
+// Importing Audio Assets
+import humanAnvil from '../assets/audio/anvil.wav';
+import wolfChomp from '../assets/audio/chomp.mp3';
+import humanBlade from '../assets/audio/blade.mp3';
+import wolfHowl from '../assets/audio/howl.mp3';
+import soundTrack from '../assets/audio/hauntedhouse.mp3';
 
 // Play class is the Play state for phaser.
 // This is where the actual game play occurs.
@@ -36,6 +44,11 @@ export default class Play extends window.Phaser.State {
     this.textStyleKey = {};
     this.textStyleValue = {};
     this.socket = null;
+    this.humanAnvilSfx = null;
+    this.wolfChompSfx = null;
+    this.wolfHowlSfx = null;
+    this.humanBladeSfx = null;
+    this.soundTrack = null;
   }
 
   // preload is a method used by Phaser states.
@@ -48,12 +61,20 @@ export default class Play extends window.Phaser.State {
     this.game.load.spritesheet('meat', meat, 16, 17); // load meat sprite
     this.game.load.spritesheet('silver', silver, 37, 35); // load silver sprite
     this.game.load.spritesheet('human', human, 29, 31);
+    
+    this.game.load.audio('humanAnvil', humanAnvil);
+    this.game.load.audio('wolfChomp', wolfChomp);
+    this.game.load.audio('wolfHowl', wolfHowl);
+    this.game.load.audio('humanBlade', humanBlade);
+    this.game.load.audio('soundTrack', soundTrack);
+
   }
 
   // create is also a method used by Phaser states.
   // It creates the game state. Here we actually create the
   // resources that we loaded in preload.
   create() {
+
     // set the world bounds (startx, starty, endx, endy)
     this.game.world.setBounds(0, 0, 1200, 600);
 
@@ -78,6 +99,15 @@ export default class Play extends window.Phaser.State {
       align: 'center'
     };
 
+    //Audio Files
+    this.humanAnvilSfx = this.game.add.audio('humanAnvil');
+    this.wolfChompSfx = this.game.add.audio('wolfChomp');
+    this.wolfHowlSfx = this.game.add.audio('wolfHowl');
+    this.humanBladeSfx = this.game.add.audio('humanBlade');
+    this.soundTrack = this.game.add.audio('soundTrack')
+    this.soundTrack.play();
+
+
     // Score and score text
     this.game.add.text(30, 20, 'SCORE', this.textStyleKey);
     this.scoreTextValue = this.game.add.text(
@@ -93,6 +123,8 @@ export default class Play extends window.Phaser.State {
     // send the socket event 'disconnect' on reload
     window.addEventListener("beforeunload", () => {
       this.socket.emit('disconnect');
+
+    //start the soundtrack  
     });
   }
 
@@ -244,9 +276,13 @@ export default class Play extends window.Phaser.State {
       delete this.meatObj[i];
       food.destroy();
       this.score++;
+      // this.wolfChompSfx.play(); //FIX IF HUMAN HEARS THIS
       this.scoreTextValue.text = this.score.toString();
-      if (this.score % 10 === 0) {
+      if (this.score % 10 === 0 && this.score !== 0) {
+        this.wolfHowlSfx.play();
         this.switchRoles();
+      } else if (this.score !== 10 || this.score !== 0) {
+        this.wolfChompSfx.play();
       }
       this.socket.emit('eat', { id: this.me.id, score: this.score });
     }
@@ -269,10 +305,14 @@ export default class Play extends window.Phaser.State {
       delete this.silverObj[i];
       silver.destroy();
       this.score++;
+      this.humanAnvilSfx.play();
       this.scoreTextValue.text = this.score.toString();
-      if (this.score % 10 === 0) {
+      if (this.score % 10 === 0 && this.score !== 0) {
+        this.humanBladeSfx.play();
         this.switchRoles();
-      }
+      } else if (this.score % 10 >= 1 || this.score !== 0) {
+        this.humanAnvilSfx.play();
+      } 
       this.socket.emit('forge', { id: this.me.id, score: this.score });
     }
   }
@@ -368,6 +408,7 @@ export default class Play extends window.Phaser.State {
     this.score = 0;
     this.meatObj = {};
     this.silverObj = {};
+    this.soundTrack.stop();
     this.game.world.removeAll();
     this.game.state.start('GameOver');
   }
