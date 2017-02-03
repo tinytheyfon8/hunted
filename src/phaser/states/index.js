@@ -6,3 +6,4 @@ export { default as NewGameMenu } from './newgamemenu';
 export { default as InstructionMenu } from './instructionmenu';
 export { default as Play } from './play';
 export { default as GameOver } from './gameover';
+export { default as Waiting } from './waiting';

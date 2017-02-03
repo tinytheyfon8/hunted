@@ -4,10 +4,12 @@ import Menu from './menu';
 
 const options = [{
   text: 'Human',
-  targetState: 'Play'
+  targetState: 'Waiting'
+  //waiting
 }, {
   text: 'Werewolf',
-  targetState: 'Play'
+  targetState: 'Waiting'
+  //waiting
 }, {
   text: 'Back',
   targetState: 'MainMenu'
