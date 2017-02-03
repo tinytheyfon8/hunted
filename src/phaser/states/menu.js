@@ -1,15 +1,23 @@
 import MenuItem from '../text/menuitem';
+import intromusic from '../assets/audio/8bitGeralt.wav';
 
 export default class Menu extends window.Phaser.State {
   constructor(options, title) {
     super();
     this.options = options;
     this.title = title;
+    this.introMusic
+  }
+
+  preload() {
+    this.game.load.audio('intromusic', intromusic);
   }
 
   create() {
     this.menuSetup();
     this.generateMenu();
+    this.introMusic = this.game.add.audio('intromusic')
+    this.introMusic.play();
   }
 
   menuSetup() {
@@ -72,5 +80,6 @@ export default class Menu extends window.Phaser.State {
   //activates targetState in options array once spacebar is pressed.
   activateFocusedItem() {
     this.menuItems[this.focused].navigate();
+    this.introMusic.stop();
   }
 }
