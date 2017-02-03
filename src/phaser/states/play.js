@@ -25,7 +25,7 @@ import soundTrack from '../assets/audio/hauntedhouse.mp3';
 // Play class is the Play state for phaser.
 // This is where the actual game play occurs.
 export default class Play extends window.Phaser.State {
-
+ console.log('hello'); 
   // set up initial values for class properties
   constructor() {
     super();
