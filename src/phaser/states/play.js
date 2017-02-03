@@ -61,7 +61,7 @@ export default class Play extends window.Phaser.State {
     this.game.load.spritesheet('meat', meat, 16, 17); // load meat sprite
     this.game.load.spritesheet('silver', silver, 37, 35); // load silver sprite
     this.game.load.spritesheet('human', human, 29, 31);
-    
+
     this.game.load.audio('humanAnvil', humanAnvil);
     this.game.load.audio('wolfChomp', wolfChomp);
     this.game.load.audio('wolfHowl', wolfHowl);
@@ -124,7 +124,7 @@ export default class Play extends window.Phaser.State {
     window.addEventListener("beforeunload", () => {
       this.socket.emit('disconnect');
 
-    //start the soundtrack  
+    //start the soundtrack
     });
   }
 
@@ -312,7 +312,7 @@ export default class Play extends window.Phaser.State {
         this.switchRoles();
       } else if (this.score % 10 >= 1 || this.score !== 0) {
         this.humanAnvilSfx.play();
-      } 
+      }
       this.socket.emit('forge', { id: this.me.id, score: this.score });
     }
   }
