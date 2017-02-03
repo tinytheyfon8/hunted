@@ -17,6 +17,7 @@ export default class Menu extends window.Phaser.State {
     this.menuSetup();
     this.generateMenu();
     this.introMusic = this.game.add.audio('intromusic')
+    this.game.sound.stopAll()
     this.introMusic.play();
   }
 
@@ -57,6 +58,7 @@ export default class Menu extends window.Phaser.State {
 
     this.menuItems[this.focused].focus(true);
 
+
     this.controls.interact.onDown.add(this.activateFocusedItem, this);
     this.controls.up.onDown.add(this.selectItem, this, 0, -1);
     this.controls.down.onDown.add(this.selectItem, this, 0, 1);
@@ -80,6 +82,5 @@ export default class Menu extends window.Phaser.State {
   //activates targetState in options array once spacebar is pressed.
   activateFocusedItem() {
     this.menuItems[this.focused].navigate();
-    this.introMusic.stop();
   }
 }
