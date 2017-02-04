@@ -1,5 +1,5 @@
 import MenuItem from '../text/menuitem';
-import intromusic from '../assets/audio/8bitGeralt.wav';
+import intromusic from '../assets/audio/8bitGeralt.ogg';
 
 export default class Menu extends window.Phaser.State {
   constructor(options, title) {
@@ -7,10 +7,6 @@ export default class Menu extends window.Phaser.State {
     this.options = options;
     this.title = title;
     this.introMusic;
-    this.pad1 = null;
-    this.button1 = null;
-    this.button2 = null;
-    this.button3 = null;
   }
 
   preload() {
@@ -30,8 +26,6 @@ export default class Menu extends window.Phaser.State {
 
     //Defining our inputs
     this.keyboard = this.game.input.keyboard;
-    this.game.input.gamepad.start();
-    this.pad1 = this.game.input.gamepad.pad1;
 
     //This allows user to make selections using arrow keys
     this.controls = this.keyboard.addKeys({
@@ -69,18 +63,6 @@ export default class Menu extends window.Phaser.State {
     this.controls.interact.onDown.add(this.activateFocusedItem, this);
     this.controls.up.onDown.add(this.selectItem, this, 0, -1);
     this.controls.down.onDown.add(this.selectItem, this, 0, 1);
-
-    if(this.pad1.connected){
-      this.button1 = this.game.input.gamepad.pad1.addButton(window.Phaser.Gamepad.XBOX360_A);
-      this.button1.onDown.add(this.activateFocusedItem, this)
-
-      this.button1 = this.game.input.gamepad.pad1.addButton(window.Phaser.Gamepad.XBOX360_DPAD_UP);
-      this.button2.onDown.add(this.selectItem, this, 0, -1)
-      
-      this.button3 = this.game.input.gamepad.pad1.addButton(window.Phaser.Gamepad.XBOX360_DPAD_DOWN);
-      this.button3.onDown.add(this.selectItem, this, 0, 1)
-      
-    }
 
   }
 
