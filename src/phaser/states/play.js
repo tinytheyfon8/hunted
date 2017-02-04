@@ -14,7 +14,6 @@ import meat from '../assets/images/food.png';
 import silver from '../assets/images/silver.png';
 import werewolf from '../assets/images/werewolf.png';
 import human from '../assets/images/human.png';
-<<<<<<< f5567dd9ead5ea9c18b979decf5b95b4efdb41db
 import walls from '../assets/images/walls.png'
 
 // Importing Audio Assets
@@ -23,10 +22,10 @@ import wolfChomp from '../assets/audio/chomp.mp3';
 import humanBlade from '../assets/audio/blade.mp3';
 import wolfHowl from '../assets/audio/howl.mp3';
 import soundTrack from '../assets/audio/hauntedhouse.mp3';
-=======
 import sprintIcon from '../assets/images/sprint.png';
 
->>>>>>> implemented sprint and cooldown indicator
+import sprintIcon from '../assets/images/sprint.png';
+
 
 // Play class is the Play state for phaser.
 // This is where the actual game play occurs.
