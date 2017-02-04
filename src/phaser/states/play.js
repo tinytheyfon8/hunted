@@ -6,7 +6,6 @@ import _ from 'lodash';
 
 import EnemyPlayer from '../EnemyPlayer';
 import LocalPlayer from '../LocalPlayer';
-import Phaser from '../../../public/phaser.min.js';
 
 // Importing Visual Assets
 import land from '../assets/images/earth.png';
@@ -24,7 +23,6 @@ import wolfHowl from '../assets/audio/howl.mp3';
 import soundTrack from '../assets/audio/hauntedhouse.mp3';
 import sprintIcon from '../assets/images/sprint.png';
 
-import sprintIcon from '../assets/images/sprint.png';
 
 
 // Play class is the Play state for phaser.
