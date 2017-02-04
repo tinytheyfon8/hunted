@@ -25,9 +25,7 @@ import wolfHowl from '../assets/audio/howl.mp3';
 import soundTrack from '../assets/audio/hauntedhouse.ogg';
 import monsterDeath from '../assets/audio/monsterdeath.wav';
 import humanDeath from '../assets/audio/wilhelmscream.mp3';
-
-
-
+import powerUp from '../assets/audio/timgormly8bitpowerup.wav'
 
 // Play class is the Play state for phaser.
 // This is where the actual game play occurs.
@@ -62,6 +60,9 @@ export default class Play extends window.Phaser.State {
     this.humanBladeSfx = null;
     this.soundTrack = null;
     this.sprintIcon = null;
+    this.powerUpSfx = null;
+    this.humanDeathSfx = null;
+    this.monsterDeathSfx = null;
     this.pad1 = null;
   }
 
@@ -84,6 +85,7 @@ export default class Play extends window.Phaser.State {
     this.game.load.audio('soundTrack', soundTrack);
     this.game.load.audio('monsterDeath', monsterDeath)
     this.game.load.audio('humanDeath', humanDeath)
+    this.game.load.audio('powerUp', powerUp)
 
 
     this.game.load.image('sprintIcon', sprintIcon);
@@ -146,9 +148,10 @@ export default class Play extends window.Phaser.State {
     this.humanBladeSfx = this.game.add.audio('humanBlade');
     this.monsterDeathSfx = this.game.add.audio('monsterDeath');
     this.humanDeathSfx = this.game.add.audio('humanDeath');
+    this.powerUpSfx = this.game.add.audio('powerUp')
     this.soundTrack = this.game.add.audio('soundTrack')
     this.game.sound.stopAll();
-    this.soundTrack.play();
+    this.soundTrack.loopFull();
 
 
     // Score and score text
@@ -180,15 +183,78 @@ export default class Play extends window.Phaser.State {
     // this.game.physics.arcade.collide(this.me.player, this.wall);
     
     if (this.me) {
+
+      // set speed if one of the xbox gamepad dpad/sticks are pressed
+      if(this.pad1.connected){
+
+        if (
+          this.pad1.axis(Phaser.Gamepad.XBOX360_STICK_LEFT_X) < -0.1 || this.pad1.axis(Phaser.Gamepad.XBOX360_STICK_LEFT_X) > 0.1 ||
+          this.pad1.axis(Phaser.Gamepad.XBOX360_STICK_LEFT_Y) > 0.1 || this.pad1.axis(Phaser.Gamepad.XBOX360_STICK_LEFT_Y) < -0.1
+          ) {
+          this.speed = 2;
+      } else {
+        this.speed = 0;
+      }
+
+        // // set direction based on what dpad/keys are down
+        if (this.pad1.axis(Phaser.Gamepad.XBOX360_STICK_LEFT_X) < -0.1 && this.pad1.axis(Phaser.Gamepad.XBOX360_STICK_LEFT_Y) > 0.1) {
+          this.newDirection = 'down-left';
+        } else if (this.pad1.axis(Phaser.Gamepad.XBOX360_STICK_LEFT_X) < -0.1 && this.pad1.axis(Phaser.Gamepad.XBOX360_STICK_LEFT_Y) < -0.1) {
+          this.newDirection = 'up-left';
+        } else if (this.pad1.axis(Phaser.Gamepad.XBOX360_STICK_LEFT_X) > 0.1 && this.pad1.axis(Phaser.Gamepad.XBOX360_STICK_LEFT_Y) > 0.1) {
+          this.newDirection = 'down-right';
+        } else if (this.pad1.axis(Phaser.Gamepad.XBOX360_STICK_LEFT_X) > 0.1 && this.pad1.axis(Phaser.Gamepad.XBOX360_STICK_LEFT_Y) < -0.1) {
+          this.newDirection = 'up-right';
+        } else if (this.pad1.axis(Phaser.Gamepad.XBOX360_STICK_LEFT_X) < -0.1) {
+          this.newDirection = 'left';
+        } else if (this.pad1.axis(Phaser.Gamepad.XBOX360_STICK_LEFT_X) > 0.1) {
+          this.newDirection = 'right';
+        } else if (this.pad1.axis(Phaser.Gamepad.XBOX360_STICK_LEFT_Y) > 0.1) {
+          this.newDirection = 'down';
+        } else if (this.pad1.axis(Phaser.Gamepad.XBOX360_STICK_LEFT_Y) < -0.1) {
+          this.newDirection = 'up';
+        }
+
+        if (!this.sprintOn) { // proceeds only if sprint is off
+          // console.log('sprint is OFF');
+          // console.log('speed without sprint is:', this.speed);
+          if (this.pad1.justPressed(Phaser.Gamepad.XBOX360_A) && !this.sprintCooldown) { // proceeds only if the player hits the space bar
+            // console.log('turning sprint on');
+
+            this.speed *= 3;
+            this.sprintOn = true;
+            this.sprintIcon.alpha = 0.15;
+            var context = this;
+
+            this.game.time.events.add(Phaser.Timer.SECOND * 3, function() { //these are buidling up
+              // console.log('3 seconds have elasped. this.speed =', context.speed);
+              context.sprintOn = false;
+              context.sprintCooldown = true;
+              context.game.add.tween(context.sprintIcon).to( { alpha: 1 }, 2000, Phaser.Easing.Linear.None, true);
+              context.game.time.events.add(Phaser.Timer.SECOND * 2, function() {
+                context.sprintCooldown = false;
+                context.powerUpSfx.play();
+
+              });
+            });
+          }
+        } else { // sprint is on
+          // console.log('sprint is ON');
+          this.sprintIcon.alpha = 0.15;
+          this.speed *= 3;
+          // console.log('speed with sprint on is:', this.speed);
+        }
+      } else {
+
       // set speed if one of the arrow keys is down
       if (
         this.cursors.right.isDown || this.cursors.left.isDown ||
         this.cursors.up.isDown || this.cursors.down.isDown
-      ) {
+        ) {
         this.speed = 2;
-      } else {
-        this.speed = 0;
-      }
+    } else {
+      this.speed = 0;
+    }
 
       // set direction based on what keys are down
       if (this.cursors.right.isDown && this.cursors.up.isDown) {
@@ -209,67 +275,37 @@ export default class Play extends window.Phaser.State {
         this.newDirection = 'down';
       }
 
-      // set speed if one of the xbox gamepad dpad/sticks are pressed
-      if(this.pad1.connected){
 
-        if (
-          this.pad1.axis(Phaser.Gamepad.XBOX360_STICK_LEFT_X) < -0.1 || this.pad1.axis(Phaser.Gamepad.XBOX360_STICK_LEFT_X) > 0.1 ||
-          this.pad1.axis(Phaser.Gamepad.XBOX360_STICK_LEFT_Y) > 0.1 || this.pad1.axis(Phaser.Gamepad.XBOX360_STICK_LEFT_Y) < -0.1
-        ) {
-          this.speed = 2;
-        } else {
-          this.speed = 0;
-        }
-
-        // // set direction based on what dpad/keys are down
-        if (this.pad1.axis(Phaser.Gamepad.XBOX360_STICK_LEFT_X) < -0.1 && this.pad1.axis(Phaser.Gamepad.XBOX360_STICK_LEFT_Y) > 0.1) {
-          this.newDirection = 'down-left';
-        } else if (this.pad1.axis(Phaser.Gamepad.XBOX360_STICK_LEFT_X) < -0.1 && this.pad1.axis(Phaser.Gamepad.XBOX360_STICK_LEFT_Y) < -0.1) {
-          this.newDirection = 'up-left';
-        } else if (this.pad1.axis(Phaser.Gamepad.XBOX360_STICK_LEFT_X) > 0.1 && this.pad1.axis(Phaser.Gamepad.XBOX360_STICK_LEFT_Y) > 0.1) {
-          this.newDirection = 'down-right';
-        } else if (this.pad1.axis(Phaser.Gamepad.XBOX360_STICK_LEFT_X) > 0.1 && this.pad1.axis(Phaser.Gamepad.XBOX360_STICK_LEFT_Y) < -0.1) {
-          this.newDirection = 'up-right';
-        } else if (this.pad1.axis(Phaser.Gamepad.XBOX360_STICK_LEFT_X) < -0.1) {
-          this.newDirection = 'left';
-        } else if (this.pad1.axis(Phaser.Gamepad.XBOX360_STICK_LEFT_X) > 0.1) {
-          this.newDirection = 'right';
-        } else if (this.pad1.axis(Phaser.Gamepad.XBOX360_STICK_LEFT_Y) > 0.1) {
-          this.newDirection = 'down';
-        } else if (this.pad1.axis(Phaser.Gamepad.XBOX360_STICK_LEFT_Y) < -0.1) {
-          this.newDirection = 'up';
-        }
-      };
-
-            if (!this.sprintOn) { // proceeds only if sprint is off
+    if (!this.sprintOn) { // proceeds only if sprint is off
         // console.log('sprint is OFF');
         // console.log('speed without sprint is:', this.speed);
-        if (this.sprintKey.isDown && !this.sprintCooldown) { // proceeds only if the player hits the space bar
-          // console.log('turning sprint on');
+      if (this.sprintKey.isDown && !this.sprintCooldown) { // proceeds only if the player hits the space bar
+        // console.log('turning sprint on');
 
-          this.speed *= 3;
-          this.sprintOn = true;
-          this.sprintIcon.alpha = 0.15;
-          var context = this;
-
-          this.game.time.events.add(Phaser.Timer.SECOND * 3, function() { //these are buidling up
-            // console.log('3 seconds have elasped. this.speed =', context.speed);
-            context.sprintOn = false;
-            context.sprintCooldown = true;
-            context.game.add.tween(context.sprintIcon).to( { alpha: 1 }, 2000, Phaser.Easing.Linear.None, true);
-            context.game.time.events.add(Phaser.Timer.SECOND * 2, function() {
-              context.sprintCooldown = false;
-              
-            });
-          });
-        }
-      } else { // sprint is on
-        // console.log('sprint is ON');
-        this.sprintIcon.alpha = 0.15;
         this.speed *= 3;
-        // console.log('speed with sprint on is:', this.speed);
-      }
+        this.sprintOn = true;
+        this.sprintIcon.alpha = 0.15;
+        var context = this;
 
+        this.game.time.events.add(Phaser.Timer.SECOND * 3, function() { //these are buidling up
+          // console.log('3 seconds have elasped. this.speed =', context.speed);
+          context.sprintOn = false;
+          context.sprintCooldown = true;
+          context.game.add.tween(context.sprintIcon).to( { alpha: 1 }, 2000, Phaser.Easing.Linear.None, true);
+          context.game.time.events.add(Phaser.Timer.SECOND * 2, function() {
+            context.sprintCooldown = false;
+            this.powerUpSfx.play();
+            
+          });
+        });
+      }
+    } else { // sprint is on
+      // console.log('sprint is ON');
+      this.sprintIcon.alpha = 0.15;
+      this.speed *= 3;
+      // console.log('speed with sprint on is:', this.speed);
+    }
+  } 
       // With this.updateDelay incrementing every time
       // update is called, the if statement below is only
       // true once every ten times. It is on these times
