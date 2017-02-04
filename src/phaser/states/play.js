@@ -1,7 +1,8 @@
 // Play game state
-
+import Phaser from '../../../public/phaser.min.js';
 import io from 'socket.io-client';
 import axios from 'axios';
+import _ from 'lodash';
 
 import EnemyPlayer from '../EnemyPlayer';
 import LocalPlayer from '../LocalPlayer';
@@ -13,6 +14,7 @@ import meat from '../assets/images/food.png';
 import silver from '../assets/images/silver.png';
 import werewolf from '../assets/images/werewolf.png';
 import human from '../assets/images/human.png';
+<<<<<<< f5567dd9ead5ea9c18b979decf5b95b4efdb41db
 import walls from '../assets/images/walls.png'
 
 // Importing Audio Assets
@@ -21,6 +23,10 @@ import wolfChomp from '../assets/audio/chomp.mp3';
 import humanBlade from '../assets/audio/blade.mp3';
 import wolfHowl from '../assets/audio/howl.mp3';
 import soundTrack from '../assets/audio/hauntedhouse.mp3';
+=======
+import sprintIcon from '../assets/images/sprint.png';
+
+>>>>>>> implemented sprint and cooldown indicator
 
 // Play class is the Play state for phaser.
 // This is where the actual game play occurs.
@@ -43,6 +49,9 @@ export default class Play extends window.Phaser.State {
     this.direction = 'right';
     this.newDirection = null;
     this.cursors = null;
+    this.sprintKey = null;
+    this.sprintCooldown = false;
+    this.sprintOn = false;
     this.scoreTextValue = null;
     this.textStyleKey = {};
     this.textStyleValue = {};
@@ -52,6 +61,7 @@ export default class Play extends window.Phaser.State {
     this.wolfHowlSfx = null;
     this.humanBladeSfx = null;
     this.soundTrack = null;
+    this.sprintIcon = null;
   }
 
   // preload is a method used by Phaser states.
@@ -72,6 +82,7 @@ export default class Play extends window.Phaser.State {
     this.game.load.audio('humanBlade', humanBlade);
     this.game.load.audio('soundTrack', soundTrack);
 
+    this.game.load.image('sprintIcon', sprintIcon);
   }
 
   // create is also a method used by Phaser states.
@@ -85,13 +96,24 @@ export default class Play extends window.Phaser.State {
     // set the world bounds (startx, starty, endx, endy)
     this.game.world.setBounds(0, 0, 1200, 600);
 
-    // show the image 'land' as the background accross field
+    // show the image 'land' as the background across field
     this.land = this.game.add.tileSprite(0, 0, 1200, 600, 'land');
 
     //this.wall = this.game.add.sprite(randomX, randomY, 'walls');
 
+    // show the image 'sprint' to illustrate when the ability is ready and when its on cooldown (add x whenever space is pressed and ability is still on cooldown)
+    // this.game.add.tileSprite(30, 45, 64, 64, 'sprintIcon');
+    this.sprintIcon = this.game.add.sprite(30, 45, 'sprintIcon');
+
+
     // create an input controller to listen for keydown events
     this.cursors = this.game.input.keyboard.createCursorKeys();
+
+    // create an input controller for listening for a keydown event on the space bar
+    this.sprintKey = this.game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
+
+    //  Stop the following keys from propagating up to the browser
+    this.game.input.keyboard.addKeyCapture([ Phaser.Keyboard.LEFT, Phaser.Keyboard.RIGHT, Phaser.Keyboard.UP, Phaser.Keyboard.DOWN, Phaser.Keyboard.SPACEBAR ]);
 
     // initiate socket connection
     this.socket = io.connect();
@@ -138,6 +160,28 @@ export default class Play extends window.Phaser.State {
 
     //start the soundtrack  
     });
+
+    // this.sprint = function() {
+    //   console.log('sprint has been activated');
+
+    //   this.speed *= 3;
+    //   this.sprintOn = true;
+    //   var context = this;
+
+    //   this.game.time.events.add(Phaser.Timer.SECOND * 3, function() { //these are buidling up
+    //     console.log('3 seconds have elasped. this.speed =', context.speed);
+    //     // context.speed /= 4;
+    //     context.sprintOn = false;
+    //   });
+    // };
+
+    // this.sprint = _.debounce(this.sprint, 2000);
+
+
+
+
+
+
   }
 
   // update is a method that every Phaser play state has.
@@ -156,6 +200,55 @@ export default class Play extends window.Phaser.State {
       } else {
         this.speed = 0;
       }
+
+      // if (this.sprintCooldown) {
+      //     // this.game.add.tween(sprintIcon).to( { alpha: .15 }, 0, Phaser.Easing.Linear.None, true);
+      //     this.sprintIcon
+      // }
+
+
+      if (!this.sprintOn) { // proceeds only if sprint is off
+        // console.log('sprint is OFF');
+        // console.log('speed without sprint is:', this.speed);
+        if (this.sprintKey.isDown && !this.sprintCooldown) { // proceeds only if the player hits the space bar
+          // console.log('turning sprint on');
+
+          this.speed *= 3;
+          this.sprintOn = true;
+          this.sprintIcon.alpha = 0.15;
+          var context = this;
+
+          this.game.time.events.add(Phaser.Timer.SECOND * 3, function() { //these are buidling up
+            // console.log('3 seconds have elasped. this.speed =', context.speed);
+            context.sprintOn = false;
+            context.sprintCooldown = true;
+            context.game.add.tween(context.sprintIcon).to( { alpha: 1 }, 2000, Phaser.Easing.Linear.None, true);
+            context.game.time.events.add(Phaser.Timer.SECOND * 2, function() {
+              context.sprintCooldown = false;
+              
+            });
+          });
+        }
+      } else { // sprint is on
+        // console.log('sprint is ON');
+        this.sprintIcon.alpha = 0.15;
+        this.speed *= 3;
+        // console.log('speed with sprint on is:', this.speed);
+      }
+
+      // this.game.time.totalElapsedSeconds() USED FOR ABILITY COOLDOWN
+
+    //  downDuration (previously called 'justPressed') does not schedule key pressing, it's merely indicative 
+    //  of key states. 
+    //  
+    //  In this case the downDuration function tells us that between this current time and 250 milliseconds ago, 
+    //  this key was pressed (not the same as holding down) and if it was pressed between that slice of time, it returns
+    //  true, otherwise false.
+    // if (this.leftKey.downDuration(250)) {
+    //   this.textLeft.text = "Left was pressed 250 ms ago? YES";
+    // } 
+
+      // dramatically increase player's speed if the space bar has been pressed
 
       // set direction based on what keys are down
       if (this.cursors.right.isDown && this.cursors.up.isDown) {
