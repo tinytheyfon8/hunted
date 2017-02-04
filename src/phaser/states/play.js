@@ -275,35 +275,34 @@ export default class Play extends window.Phaser.State {
       // set speed if one of the xbox gamepad dpad/sticks are pressed
       if(this.pad1.connected){
 
-      if (
-        this.pad1.axis(Phaser.Gamepad.XBOX360_STICK_LEFT_X) < -0.1 || this.pad1.axis(Phaser.Gamepad.XBOX360_STICK_LEFT_X) > 0.1 ||
-        this.pad1.axis(Phaser.Gamepad.XBOX360_STICK_LEFT_Y) > 0.1 || this.pad1.axis(Phaser.Gamepad.XBOX360_STICK_LEFT_Y) < -0.1
-      ) {
-        this.speed = 2;
-      } else {
-        this.speed = 0;
-      }
+        if (
+          this.pad1.axis(Phaser.Gamepad.XBOX360_STICK_LEFT_X) < -0.1 || this.pad1.axis(Phaser.Gamepad.XBOX360_STICK_LEFT_X) > 0.1 ||
+          this.pad1.axis(Phaser.Gamepad.XBOX360_STICK_LEFT_Y) > 0.1 || this.pad1.axis(Phaser.Gamepad.XBOX360_STICK_LEFT_Y) < -0.1
+        ) {
+          this.speed = 2;
+        } else {
+          this.speed = 0;
+        }
 
-      // set direction based on what dpad/keys are down
-      if (this.pad1.axis(this.Gamepad.XBOX360_STICK_LEFT_X) < -0.1 && this.pad1.axis(this.Gamepad.XBOX360_STICK_LEFT_Y) > 0.1) {
-        this.newDirection = 'up-right';
-      } else if (this.pad1.axis(this.Gamepad.XBOX360_STICK_LEFT_X) < -0.1 && this.pad1.axis(this.Gamepad.XBOX360_STICK_LEFT_Y) < -0.1) {
-        this.newDirection = 'down-right';
-      } else if (this.pad1.axis(this.Gamepad.XBOX360_STICK_LEFT_X) > 0.1 && this.pad1.axis(this.Gamepad.XBOX360_STICK_LEFT_Y) > 0.1) {
-        this.newDirection = 'up-left';
-      } else if (this.pad1.axis(this.Gamepad.XBOX360_STICK_LEFT_X) > 0.1 && this.pad1.axis(this.Gamepad.XBOX360_STICK_LEFT_Y) < -0.1) {
-        this.newDirection = 'down-left';
-      } else if (this.pad1.axis(this.Gamepad.XBOX360_STICK_LEFT_X) < -0.1) {
-        this.newDirection = 'right';
-      } else if (this.pad1.axis(this.Gamepad.XBOX360_STICK_LEFT_X) > 0.1) {
-        this.newDirection = 'left';
-      } else if (this.pad1.axis(this.Gamepad.XBOX360_STICK_LEFT_Y) > 0.1) {
-        this.newDirection = 'up';
-      } else if (this.pad1.axis(this.Gamepad.XBOX360_STICK_LEFT_Y) < -0.1) {
-        this.newDirection = 'down';
-      }
-
-    }
+        // // set direction based on what dpad/keys are down
+        if (this.pad1.axis(Phaser.Gamepad.XBOX360_STICK_LEFT_X) < -0.1 && this.pad1.axis(Phaser.Gamepad.XBOX360_STICK_LEFT_Y) > 0.1) {
+          this.newDirection = 'down-left';
+        } else if (this.pad1.axis(Phaser.Gamepad.XBOX360_STICK_LEFT_X) < -0.1 && this.pad1.axis(Phaser.Gamepad.XBOX360_STICK_LEFT_Y) < -0.1) {
+          this.newDirection = 'up-left';
+        } else if (this.pad1.axis(Phaser.Gamepad.XBOX360_STICK_LEFT_X) > 0.1 && this.pad1.axis(Phaser.Gamepad.XBOX360_STICK_LEFT_Y) > 0.1) {
+          this.newDirection = 'down-right';
+        } else if (this.pad1.axis(Phaser.Gamepad.XBOX360_STICK_LEFT_X) > 0.1 && this.pad1.axis(Phaser.Gamepad.XBOX360_STICK_LEFT_Y) < -0.1) {
+          this.newDirection = 'up-right';
+        } else if (this.pad1.axis(Phaser.Gamepad.XBOX360_STICK_LEFT_X) < -0.1) {
+          this.newDirection = 'left';
+        } else if (this.pad1.axis(Phaser.Gamepad.XBOX360_STICK_LEFT_X) > 0.1) {
+          this.newDirection = 'right';
+        } else if (this.pad1.axis(Phaser.Gamepad.XBOX360_STICK_LEFT_Y) > 0.1) {
+          this.newDirection = 'down';
+        } else if (this.pad1.axis(Phaser.Gamepad.XBOX360_STICK_LEFT_Y) < -0.1) {
+          this.newDirection = 'up';
+        }
+      };
       // With this.updateDelay incrementing every time
       // update is called, the if statement below is only
       // true once every ten times. It is on these times
