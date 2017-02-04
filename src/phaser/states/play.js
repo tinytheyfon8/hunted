@@ -13,15 +13,19 @@ import meat from '../assets/images/food.png';
 import silver from '../assets/images/silver.png';
 import werewolf from '../assets/images/werewolf.png';
 import human from '../assets/images/human.png';
-import walls from '../assets/images/walls.png'
+import walls from '../assets/images/walls.png';
+import sprintIcon from '../assets/images/sprint.png';
+
 
 // Importing Audio Assets
 import humanAnvil from '../assets/audio/anvil.wav';
 import wolfChomp from '../assets/audio/chomp.mp3';
 import humanBlade from '../assets/audio/blade.mp3';
 import wolfHowl from '../assets/audio/howl.mp3';
-import soundTrack from '../assets/audio/hauntedhouse.mp3';
-import sprintIcon from '../assets/images/sprint.png';
+import soundTrack from '../assets/audio/hauntedhouse.ogg';
+import monsterDeath from '../assets/audio/monsterdeath.wav';
+import humanDeath from '../assets/audio/wilhelmscream.mp3';
+
 
 
 
@@ -58,6 +62,7 @@ export default class Play extends window.Phaser.State {
     this.humanBladeSfx = null;
     this.soundTrack = null;
     this.sprintIcon = null;
+    this.pad1 = null;
   }
 
   // preload is a method used by Phaser states.
@@ -77,6 +82,9 @@ export default class Play extends window.Phaser.State {
     this.game.load.audio('wolfHowl', wolfHowl);
     this.game.load.audio('humanBlade', humanBlade);
     this.game.load.audio('soundTrack', soundTrack);
+    this.game.load.audio('monsterDeath', monsterDeath)
+    this.game.load.audio('humanDeath', humanDeath)
+
 
     this.game.load.image('sprintIcon', sprintIcon);
   }
@@ -111,6 +119,10 @@ export default class Play extends window.Phaser.State {
     //  Stop the following keys from propagating up to the browser
     this.game.input.keyboard.addKeyCapture([ Phaser.Keyboard.LEFT, Phaser.Keyboard.RIGHT, Phaser.Keyboard.UP, Phaser.Keyboard.DOWN, Phaser.Keyboard.SPACEBAR ]);
 
+    // To listen to buttons from a specific pad listen directly on that pad game.input.gamepad.padX, where X = pad 1-4
+    this.game.input.gamepad.start();
+    this.pad1 = this.game.input.gamepad.pad1;
+
     // initiate socket connection
     this.socket = io.connect();
 
@@ -126,12 +138,16 @@ export default class Play extends window.Phaser.State {
       align: 'center'
     };
 
+
     //Audio Files
     this.humanAnvilSfx = this.game.add.audio('humanAnvil');
     this.wolfChompSfx = this.game.add.audio('wolfChomp');
     this.wolfHowlSfx = this.game.add.audio('wolfHowl');
     this.humanBladeSfx = this.game.add.audio('humanBlade');
+    this.monsterDeathSfx = this.game.add.audio('monsterDeath');
+    this.humanDeathSfx = this.game.add.audio('humanDeath');
     this.soundTrack = this.game.add.audio('soundTrack')
+    this.game.sound.stopAll();
     this.soundTrack.play();
 
 
@@ -152,31 +168,8 @@ export default class Play extends window.Phaser.State {
 
     // send the socket event 'disconnect' on reload
     window.addEventListener("beforeunload", () => {
-      this.socket.emit('disconnect');
-
-    //start the soundtrack  
+      this.socket.emit('disconnect');  
     });
-
-    // this.sprint = function() {
-    //   console.log('sprint has been activated');
-
-    //   this.speed *= 3;
-    //   this.sprintOn = true;
-    //   var context = this;
-
-    //   this.game.time.events.add(Phaser.Timer.SECOND * 3, function() { //these are buidling up
-    //     console.log('3 seconds have elasped. this.speed =', context.speed);
-    //     // context.speed /= 4;
-    //     context.sprintOn = false;
-    //   });
-    // };
-
-    // this.sprint = _.debounce(this.sprint, 2000);
-
-
-
-
-
 
   }
 
@@ -197,13 +190,58 @@ export default class Play extends window.Phaser.State {
         this.speed = 0;
       }
 
-      // if (this.sprintCooldown) {
-      //     // this.game.add.tween(sprintIcon).to( { alpha: .15 }, 0, Phaser.Easing.Linear.None, true);
-      //     this.sprintIcon
-      // }
+      // set direction based on what keys are down
+      if (this.cursors.right.isDown && this.cursors.up.isDown) {
+        this.newDirection = 'up-right';
+      } else if (this.cursors.right.isDown && this.cursors.down.isDown) {
+        this.newDirection = 'down-right';
+      } else if (this.cursors.left.isDown && this.cursors.up.isDown) {
+        this.newDirection = 'up-left';
+      } else if (this.cursors.left.isDown && this.cursors.down.isDown) {
+        this.newDirection = 'down-left';
+      } else if (this.cursors.right.isDown) {
+        this.newDirection = 'right';
+      } else if (this.cursors.left.isDown) {
+        this.newDirection = 'left';
+      } else if (this.cursors.up.isDown) {
+        this.newDirection = 'up';
+      } else if (this.cursors.down.isDown) {
+        this.newDirection = 'down';
+      }
 
+      // set speed if one of the xbox gamepad dpad/sticks are pressed
+      if(this.pad1.connected){
 
-      if (!this.sprintOn) { // proceeds only if sprint is off
+        if (
+          this.pad1.axis(Phaser.Gamepad.XBOX360_STICK_LEFT_X) < -0.1 || this.pad1.axis(Phaser.Gamepad.XBOX360_STICK_LEFT_X) > 0.1 ||
+          this.pad1.axis(Phaser.Gamepad.XBOX360_STICK_LEFT_Y) > 0.1 || this.pad1.axis(Phaser.Gamepad.XBOX360_STICK_LEFT_Y) < -0.1
+        ) {
+          this.speed = 2;
+        } else {
+          this.speed = 0;
+        }
+
+        // // set direction based on what dpad/keys are down
+        if (this.pad1.axis(Phaser.Gamepad.XBOX360_STICK_LEFT_X) < -0.1 && this.pad1.axis(Phaser.Gamepad.XBOX360_STICK_LEFT_Y) > 0.1) {
+          this.newDirection = 'down-left';
+        } else if (this.pad1.axis(Phaser.Gamepad.XBOX360_STICK_LEFT_X) < -0.1 && this.pad1.axis(Phaser.Gamepad.XBOX360_STICK_LEFT_Y) < -0.1) {
+          this.newDirection = 'up-left';
+        } else if (this.pad1.axis(Phaser.Gamepad.XBOX360_STICK_LEFT_X) > 0.1 && this.pad1.axis(Phaser.Gamepad.XBOX360_STICK_LEFT_Y) > 0.1) {
+          this.newDirection = 'down-right';
+        } else if (this.pad1.axis(Phaser.Gamepad.XBOX360_STICK_LEFT_X) > 0.1 && this.pad1.axis(Phaser.Gamepad.XBOX360_STICK_LEFT_Y) < -0.1) {
+          this.newDirection = 'up-right';
+        } else if (this.pad1.axis(Phaser.Gamepad.XBOX360_STICK_LEFT_X) < -0.1) {
+          this.newDirection = 'left';
+        } else if (this.pad1.axis(Phaser.Gamepad.XBOX360_STICK_LEFT_X) > 0.1) {
+          this.newDirection = 'right';
+        } else if (this.pad1.axis(Phaser.Gamepad.XBOX360_STICK_LEFT_Y) > 0.1) {
+          this.newDirection = 'down';
+        } else if (this.pad1.axis(Phaser.Gamepad.XBOX360_STICK_LEFT_Y) < -0.1) {
+          this.newDirection = 'up';
+        }
+      };
+
+            if (!this.sprintOn) { // proceeds only if sprint is off
         // console.log('sprint is OFF');
         // console.log('speed without sprint is:', this.speed);
         if (this.sprintKey.isDown && !this.sprintCooldown) { // proceeds only if the player hits the space bar
@@ -230,39 +268,6 @@ export default class Play extends window.Phaser.State {
         this.sprintIcon.alpha = 0.15;
         this.speed *= 3;
         // console.log('speed with sprint on is:', this.speed);
-      }
-
-      // this.game.time.totalElapsedSeconds() USED FOR ABILITY COOLDOWN
-
-    //  downDuration (previously called 'justPressed') does not schedule key pressing, it's merely indicative 
-    //  of key states. 
-    //  
-    //  In this case the downDuration function tells us that between this current time and 250 milliseconds ago, 
-    //  this key was pressed (not the same as holding down) and if it was pressed between that slice of time, it returns
-    //  true, otherwise false.
-    // if (this.leftKey.downDuration(250)) {
-    //   this.textLeft.text = "Left was pressed 250 ms ago? YES";
-    // } 
-
-      // dramatically increase player's speed if the space bar has been pressed
-
-      // set direction based on what keys are down
-      if (this.cursors.right.isDown && this.cursors.up.isDown) {
-        this.newDirection = 'up-right';
-      } else if (this.cursors.right.isDown && this.cursors.down.isDown) {
-        this.newDirection = 'down-right';
-      } else if (this.cursors.left.isDown && this.cursors.up.isDown) {
-        this.newDirection = 'up-left';
-      } else if (this.cursors.left.isDown && this.cursors.down.isDown) {
-        this.newDirection = 'down-left';
-      } else if (this.cursors.right.isDown) {
-        this.newDirection = 'right';
-      } else if (this.cursors.left.isDown) {
-        this.newDirection = 'left';
-      } else if (this.cursors.up.isDown) {
-        this.newDirection = 'up';
-      } else if (this.cursors.down.isDown) {
-        this.newDirection = 'down';
       }
 
       // With this.updateDelay incrementing every time
@@ -552,6 +557,21 @@ export default class Play extends window.Phaser.State {
     const won = !this.me.isHunted;
     window.app.model.won = won;
     window.app.model.score = won ? this.score + 100 : this.score;
+
+    //These if statement is for playing the death sfx
+    if(won && this.me.type === 'human'){
+      this.monsterDeathSfx.play();
+    };
+    if(won && this.me.type === 'werewolf'){
+      this.humanDeathSfx.play();
+    };
+    if(!won && this.me.type === 'human'){
+      this.humanDeathSfx.play();
+    };
+    if(!won && this.me.type === 'werewolf'){
+      this.monsterDeathSfx.play();
+    };
+
     this.me.player.destroy();
     this.enemy.player.destroy();
     this.me = null;

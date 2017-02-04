@@ -1,8 +1,8 @@
 // Game over state
 
 import einstein from '../assets/images/einstein.png';
-import gameovermusic from '../assets/audio/gameoverloss.mp3';
-import winmusic from '../assets/audio/anewbegining.mp3';
+import gameovermusic from '../assets/audio/gameoverloss.ogg';
+import winmusic from '../assets/audio/anewbegining.ogg';
 
 export default class GameOver extends window.Phaser.State {
 
